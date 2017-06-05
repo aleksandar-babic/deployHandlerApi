@@ -20,7 +20,7 @@ exports.addApp = function(req, res) {
                 return res.status(500).send(err);
             var sendCommand = exec("bash /root/scripts/addApp.sh " + req.body.user + ' 1234 ' + req.body.name + ' ' + req.body.port, function(err, stdout, stderr) {
                 if (err)
-
+                    return res.status(500).json({ message: 'Error while adding app.' });
                 console.log(stdout);
             });
             sendCommand.on('exit', function (code) {
