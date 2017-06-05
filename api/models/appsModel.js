@@ -1,10 +1,14 @@
 'use strict';
 var mongoose = require('mongoose');
+var uniqueValidator = require('mongoose-unique-validator');
 var Schema = mongoose.Schema;
+
 
 var AppSchema = new Schema({
     name: {
-        type: String
+        type: String,
+        unique: true,
+        uniqueCaseInsensitive: true
     },
     Created_date: {
         type: Date,
@@ -21,11 +25,14 @@ var AppSchema = new Schema({
         type: String
     },
     port:{
-        type: String
+        type: String,
+        unique: true
     },
     user:{
         type: String
     }
 });
+
+AppSchema.plugin(uniqueValidator);
 
 module.exports = mongoose.model('Apps', AppSchema);
