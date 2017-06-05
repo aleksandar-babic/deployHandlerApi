@@ -1,0 +1,27 @@
+{
+  "name": "deployhandler-rest-api",
+  "version": "1.0.0",
+  "description": "REST Api for DeployHandler.js",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node ./server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://aleksandarbabic@bitbucket.org/aleksandarbabic/deployhandlerapi.git"
+  },
+  "keywords": [
+    "DeployHandler"
+  ],
+  "author": "Aleksandar Babic",
+  "license": "ISC",
+  "homepage": "https://bitbucket.org/aleksandarbabic/deployhandlerapi#readme",
+  "dependencies": {
+    "body-parser": "^1.17.2",
+    "cookie-parser": "^1.4.3",
+    "express": "^4.15.3",
+    "mongoose": "^4.10.4",
+    "path": "^0.12.7"
+  }
+}
