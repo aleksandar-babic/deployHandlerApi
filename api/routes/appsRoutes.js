@@ -11,7 +11,6 @@ router.get('/', function (req, res, next) {
 
 router.post('/', function (req, res, next) {
     appController.addApp(req,res);
-
 });
 
 router.get('/:appId',function (req,res,next) {
@@ -24,6 +23,14 @@ router.put('/:appId',function (req,res,next) {
 
 router.delete('/:appId',function (req,res,next) {
     appController.deleteApp(req,res);
+});
+
+router.post('/start/:appId', function (req, res, next) {
+    appController.startApp(req,res);
+});
+
+router.post('/stop/:appId', function (req, res, next) {
+    appController.stopApp(req,res);
 });
 
 module.exports = router;
