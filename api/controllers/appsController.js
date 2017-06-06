@@ -130,3 +130,17 @@ exports.stopApp = function(req, res) {
         });
     });
 };
+
+exports.checkAppStatus = function (req,res) {
+    App.findById(req.params.appId, function(err, app) {
+        if (err)
+            return res.status(500).send(err);
+        if (!app)
+            return res.status(404).json({ message: 'Could not find app with that id.' });
+
+        if(app.status == 'started')
+            return res.status(200).json({ message: 'App is started.' });
+        else
+            return res.status(200).json({ message: 'App is stopped.' });
+    });
+};

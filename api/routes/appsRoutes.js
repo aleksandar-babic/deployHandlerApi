@@ -33,4 +33,8 @@ router.post('/stop/:appId', function (req, res, next) {
     appController.stopApp(req,res);
 });
 
+router.get('/status/:appId',function (req,res,next) {
+    appController.checkAppStatus(req,res);
+});
+
 module.exports = router;
