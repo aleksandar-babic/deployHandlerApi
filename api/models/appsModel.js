@@ -3,6 +3,7 @@ var mongoose = require('mongoose');
 var uniqueValidator = require('mongoose-unique-validator');
 var Schema = mongoose.Schema;
 
+var User = require('./usersModel')
 
 var AppSchema = new Schema({
     name: {
@@ -29,8 +30,16 @@ var AppSchema = new Schema({
         unique: true
     },
     user:{
-        type: String
+        type: Schema.Types.ObjectId,
+        ref: 'Users'
     }
+});
+
+AppSchema.post('remove', function (app) {
+    User.findById(app.user, function (err, user) {
+        user.apps.pull(app);
+        user.save();
+    });
 });
 
 AppSchema.plugin(uniqueValidator);

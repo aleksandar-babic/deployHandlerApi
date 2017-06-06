@@ -5,7 +5,7 @@ var bodyParser = require('body-parser');
 var mongoose = require('mongoose');
 
 var appsRoute = require('./api/routes/appsRoutes');
-
+var usersRoute = require('./api/routes/usersRoutes');
 
 var app = express();
 mongoose.Promise = global.Promise;
@@ -24,10 +24,14 @@ app.use(function (req, res, next) {
 });
 
 app.use('/api/apps', appsRoute);
-
+app.use('/api/users', usersRoute);
 
 var port = process.env.PORT || 3000;
 app.listen(port);
+
+app.get('/', function(req, res) {
+    res.send('Hi there, welcome! The DeployHandler API is at http://deployhandler:' + port + '/api');
+});
 
 console.log('DeployHandler API server up on : ' + port);
 
