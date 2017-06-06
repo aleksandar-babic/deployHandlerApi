@@ -9,7 +9,7 @@ exports.getAppList = function(req, res) {
     App.find({}, function(err, app) {
         if (err)
             return res.status(500).send(err);
-        res.status(200).json(app);
+        return res.status(200).json(app);
     });
 };
 
@@ -19,8 +19,8 @@ exports.addApp = function(req, res) {
             if (err)
                 return res.status(500).send(err);
             var sendCommand = exec("bash /root/scripts/addApp.sh " + req.body.user + ' 1234 ' + req.body.name + ' ' + req.body.port, function(err, stdout, stderr) {
-                if (err)
-                    return res.status(500).json({ message: 'Error while adding app.' });
+                //if (err)
+                    //return res.status(500).json({ message: 'Error while adding app.' });
                 console.log(stdout);
             });
             sendCommand.on('exit', function (code) {
@@ -38,7 +38,7 @@ exports.viewApp = function(req, res) {
             return res.status(500).send(err);
         if (!app)
             return res.status(404).json({ message: 'Could not find app with that id.' });
-        res.status(200).json(app);
+        return res.status(200).json(app);
     });
 };
 
@@ -61,8 +61,8 @@ exports.deleteApp = function(req, res) {
         if (!app)
             return res.status(404).json({ message: 'Could not find app with that id.' });
         var sendCommand = exec("bash /root/scripts/removeApp.sh " + app.user +' '+ app.name, function(err, stdout, stderr) {
-            if (err)
-                return res.status(500).json({ message: 'Error while deleting app.' });
+            //if (err)
+                //return res.status(500).json({ message: 'Error while deleting app.' });
             console.log(stdout);
         });
         sendCommand.on('exit', function (code) {
@@ -74,7 +74,7 @@ exports.deleteApp = function(req, res) {
                 }, function(err, app) {
                     if (err)
                         return res.status(404).send(err);
-                    res.status(200).json({ message: 'App has been deleted.' });
+                    return res.status(200).json({ message: 'App has been deleted.' });
                 });
             }
         });
@@ -88,8 +88,8 @@ exports.startApp = function(req, res) {
         if (!app)
             return res.status(404).json({ message: 'Could not find app with that id.' });
         var sendCommand = exec("bash /root/scripts/startApp.sh " + app.user + ' ' + app.name + ' ' + app.entryPoint, function(err, stdout, stderr) {
-            if (err)
-                return res.status(500).json({ message: 'Error while starting app.' });
+            //if (err)
+                //return res.status(500).json({ message: 'Error while starting app.' });
             console.log(stdout);
         });
 
@@ -114,8 +114,8 @@ exports.stopApp = function(req, res) {
         if (!app)
             return res.status(404).json({ message: 'Could not find app with that id.' });
         var sendCommand = exec("bash /root/scripts/stopApp.sh " + app.name , function(err, stdout, stderr) {
-            if (err)
-                return res.status(500).json({ message: 'Error while stopping app.' });
+            //if (err)
+                //return res.status(500).json({ message: 'Error while stopping app.' });
             console.log(stdout);
         });
 
