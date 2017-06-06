@@ -48,6 +48,7 @@ exports.updateApp = function(req, res) {
             return res.status(500).send(err);
         if (!app)
             return res.status(404).json({ message: 'Could not find app with that id.' });
+        //TODO allow port or app name to be changed (Must write new util script)
         return res.status(200).json(app);
     });
 };
@@ -106,4 +107,26 @@ exports.startApp = function(req, res) {
     });
 };
 
-exports.stopApp = function(req, res) {};
+exports.stopApp = function(req, res) {
+    App.findById(req.params.appId, function(err, app) {
+        if (err)
+            return res.status(500).send(err);
+        if (!app)
+            return res.status(404).json({ message: 'Could not find app with that id.' });
+        var sendCommand = exec("bash /root/scripts/stopApp.sh " + app.name , function(err, stdout, stderr) {
+            if (err)
+                return res.status(500).json({ message: 'Error while stopping app.' });
+            console.log(stdout);
+        });
+
+        sendCommand.on('exit', function (code) {
+            if(code == 1)
+                return res.status(500).json({ message: 'App is already stopped' });
+            else{
+                app.status = "stopped";
+                app.save();
+                return res.status(200).json({ message: 'App has been stopped.' });
+            }
+        });
+    });
+};
