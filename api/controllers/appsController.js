@@ -1,6 +1,6 @@
 'use strict';
 var mongoose = require('mongoose');
-var sys = require('util')
+var sys = require('util');
 var exec = require('child_process').exec;
 
 var App = require('../models/appsModel')
@@ -54,11 +54,29 @@ exports.updateApp = function(req, res) {
 
 
 exports.deleteApp = function(req, res) {
-    App.remove({
-        _id: req.params.appId
-    }, function(err, app) {
+    App.findById(req.params.appId, function(err, app) {
         if (err)
-            return res.status(404).send(err);
-        res.status(200).json({ message: 'App has been deleted.' });
+            return res.status(500).send(err);
+        if (!app)
+            return res.status(404).json({ message: 'Could not find app with that id.' });
+        var sendCommand = exec("bash /root/scripts/removeApp.sh " + app.user +' '+ app.name, function(err, stdout, stderr) {
+            if (err)
+                return res.status(500).json({ message: 'Error while deleting app.' });
+            console.log(stdout);
+        });
+        sendCommand.on('exit', function (code) {
+            if (code != 0)
+                return res.status(500).json({ message: 'Error while deleting app.' });
+            else{
+                App.remove({
+                    _id: app._id
+                }, function(err, app) {
+                    if (err)
+                        return res.status(404).send(err);
+                    res.status(200).json({ message: 'App has been deleted.' });
+                });
+            }
+        });
     });
-};
+    };
+
