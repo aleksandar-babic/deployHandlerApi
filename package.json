@@ -26,7 +26,5 @@
     "mongoose": "^4.10.4",
     "mongoose-unique-validator": "^1.0.5",
     "path": "^0.12.7",
-    "bcryptjs": "*",
-    "jsonwebtoken": "*"
   }
 }
