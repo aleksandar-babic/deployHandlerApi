@@ -30,7 +30,7 @@ var port = process.env.PORT || 3000;
 app.listen(port);
 
 app.get('/', function(req, res) {
-    res.send('Hi there, welcome! The DeployHandler API is at http://deployhandler:' + port + '/api');
+    res.send('Hi there, welcome! The DeployHandler API is at http://deployhandler.com:' + port + '/api');
 });
 
 console.log('DeployHandler API server up on : ' + port);
