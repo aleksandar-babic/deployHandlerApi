@@ -11,7 +11,7 @@ exports.register = function(req,res){
 
     if(!req.body.username || !req.body.email || !req.body.password)
         return res.status(500).json({
-            message: "Malformed request to register, username, password and e-mail are required."
+            message: "Malformed request to register. username, password and e-mail are required."
         });
     var sendCommand = exec("bash /root/scripts/addUser.sh " + req.body.username+' '+ req.body.password, function(err, stdout, stderr) {
         console.log("STDOUT: "+stdout);
@@ -29,7 +29,6 @@ exports.register = function(req,res){
                 password: bcrypt.hashSync(req.body.password, 10),
                 email: req.body.email
             });
-            //TODO Do request data validation and call shell script to add user to NODE server
             user.save(function (err, result) {
                 if(err)
                     return res.status(500).json({

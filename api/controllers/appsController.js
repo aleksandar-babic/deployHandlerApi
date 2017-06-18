@@ -103,23 +103,35 @@ exports.viewApp = function(req, res) {
         if (!app)
             return res.status(404).json({ message: 'Could not find app with that id.' });
         var decoded = jwt.decode(req.query.token);
-
         if(decoded.user._id != app.user)
             return res.status(500).json({ message: 'That app does not belong to you.'});
+
         return res.status(200).json(app);
     });
 };
 
 exports.updateApp = function(req, res) {
-    App.findOneAndUpdate({'_id':req.params.appId}, req.body, {new: true}, function(err, app){
+
+    App.findById(req.params.appId, function(err, app) {
         if (err)
             return res.status(500).send(err);
         if (!app)
             return res.status(404).json({ message: 'Could not find app with that id.' });
+        var decoded = jwt.decode(req.query.token);
+        if(decoded.user._id != app.user)
+            return res.status(500).json({ message: 'That app does not belong to you.'});
 
-        //TODO allow port or app name to be changed (Must write new util script)
-        return res.status(200).json(app);
+        App.findOneAndUpdate({'_id':req.params.appId}, req.body, {new: true}, function(err, app){
+            if (err)
+                return res.status(500).send(err);
+            if (!app)
+                return res.status(404).json({ message: 'Could not find app with that id.' });
+
+            //TODO allow port or app name to be changed (Must write new util script)
+            return res.status(200).json(app);
+        });
     });
+
 };
 
 
