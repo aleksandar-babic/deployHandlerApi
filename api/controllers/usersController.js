@@ -25,10 +25,15 @@ exports.register = function(req,res){
 };
 
 exports.login = function(req,res){
+    if(!req.body.username || !req.body.password)
+        return res.status(500).json({
+            message: 'Both username and password are required.'
+        });
+
     User.findOne({username:req.body.username}, function (err,user) {
         if (err)
             return res.status(500).json({
-                title: 'An error occurred while logging in.',
+                message: 'An error occurred while logging in.',
                 error: err
             });
         //True if no user found in database

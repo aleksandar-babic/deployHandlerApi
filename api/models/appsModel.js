@@ -8,6 +8,7 @@ var User = require('./usersModel')
 var AppSchema = new Schema({
     name: {
         type: String,
+        required: true,
         unique: true,
         uniqueCaseInsensitive: true
     },
@@ -23,10 +24,12 @@ var AppSchema = new Schema({
         default: ['stopped']
     },
     entryPoint:{
-        type: String
+        type: String,
+        required: true
     },
     port:{
         type: String,
+        required: true,
         unique: true
     },
     user:{

@@ -2,11 +2,15 @@
 var mongoose = require('mongoose');
 var sys = require('util');
 var exec = require('child_process').exec;
+var jwt = require('jsonwebtoken');
 
-var App = require('../models/appsModel')
+var App = require('../models/appsModel');
+var User = require('../models/usersModel');
+
 
 exports.getAppList = function(req, res) {
-    App.find({}, function(err, app) {
+    var decoded = jwt.decode(req.query.token);
+    App.find({'user': decoded.user._id}, function(err, app) {
         if (err)
             return res.status(500).send(err);
         return res.status(200).json(app);
@@ -14,21 +18,58 @@ exports.getAppList = function(req, res) {
 };
 
 exports.addApp = function(req, res) {
-        var app = new App(req.body);
-        app.save(function (err, app) {
-            if (err)
-                return res.status(500).send(err);
-            var sendCommand = exec("bash /root/scripts/addApp.sh " + req.body.user + ' 1234 ' + req.body.name + ' ' + req.body.port, function(err, stdout, stderr) {
-                //if (err)
-                    //return res.status(500).json({ message: 'Error while adding app.' });
-                console.log(stdout);
+        var decoded = jwt.decode(req.query.token);
+        if(!req.body.name || !req.body.port || !req.body.entryPoint)
+            return res.status(500).json({
+                message: 'App name, port and entry point are required.'
+            });
+        User.findById(decoded.user._id,function (err,user) {
+            if(err)
+                return res.status(500).json({
+                    message: 'An error occurred',
+                    error: err
+                });
+            if(!user)
+                return res.status(404).json({
+                    message: 'Could not find that user',
+                    error: err
+                });
+            var sendCommand = exec("bash /root/scripts/addApp.sh " + decoded.user.username +' '+ req.body.name +' '+ req.body.port, function(err, stdout, stderr) {
+                console.log("STDOUT: "+stdout);
+                console.log("STDERR: "+stderr);
             });
             sendCommand.on('exit', function (code) {
-                if (code != 0)
-                    return res.status(500).json({ message: 'Error while adding app.' });
-                else
-                    return res.status(201).json(app);
+                if (code != 0){
+                    return res.status(500).json({
+                        message: 'An error occurred while adding app.',
+                        error: err
+                    });
+                }
+                else{
+                    var app = new App({
+                        name:req.body.name,
+                        entryPoint:req.body.entryPoint,
+                        port:req.body.port,
+                        user:user
+                    });
+
+                    app.save(function (err,result) {
+                        if(err)
+                            return res.status(500).json({
+                                message: 'An error occurred',
+                                error: err
+                            });
+
+                        user.apps.push(result);
+                        user.save();
+                        res.status(201).json({
+                            message: 'App added successfully.',
+                            obj: result
+                        });
+                    });
+                }
             });
+
         });
 };
 
