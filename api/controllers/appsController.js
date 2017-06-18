@@ -169,9 +169,11 @@ exports.startApp = function(req, res) {
             return res.status(500).send(err);
         if (!app)
             return res.status(404).json({ message: 'Could not find app with that id.' });
-        var sendCommand = exec("bash /root/scripts/startApp.sh " + app.user + ' ' + app.name + ' ' + app.entryPoint, function(err, stdout, stderr) {
-            //if (err)
-                //return res.status(500).json({ message: 'Error while starting app.' });
+        var decoded = jwt.decode(req.query.token);
+        if(decoded.user._id != app.user)
+            return res.status(500).json({ message: 'That app does not belong to you.'});
+
+        var sendCommand = exec("bash /root/scripts/startApp.sh " + decoded.user.username + ' ' + app.name + ' ' + app.entryPoint, function(err, stdout, stderr) {
             console.log(stdout);
         });
 
@@ -181,6 +183,7 @@ exports.startApp = function(req, res) {
             else if(code == 1)
                 return res.status(500).json({ message: 'App start FAILED.' });
             else{
+                //TODO Improve check of app status
                 app.status = "started";
                 app.save();
                 return res.status(200).json({ message: 'App has been started.' });
@@ -195,6 +198,10 @@ exports.stopApp = function(req, res) {
             return res.status(500).send(err);
         if (!app)
             return res.status(404).json({ message: 'Could not find app with that id.' });
+        var decoded = jwt.decode(req.query.token);
+        if(decoded.user._id != app.user)
+            return res.status(500).json({ message: 'That app does not belong to you.'});
+
         var sendCommand = exec("bash /root/scripts/stopApp.sh " + app.name , function(err, stdout, stderr) {
             //if (err)
                 //return res.status(500).json({ message: 'Error while stopping app.' });
@@ -210,19 +217,5 @@ exports.stopApp = function(req, res) {
                 return res.status(200).json({ message: 'App has been stopped.' });
             }
         });
-    });
-};
-
-exports.checkAppStatus = function (req,res) {
-    App.findById(req.params.appId, function(err, app) {
-        if (err)
-            return res.status(500).send(err);
-        if (!app)
-            return res.status(404).json({ message: 'Could not find app with that id.' });
-
-        if(app.status == 'started')
-            return res.status(200).json({ message: 'App is started.' });
-        else
-            return res.status(200).json({ message: 'App is stopped.' });
     });
 };

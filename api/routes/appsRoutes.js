@@ -37,16 +37,12 @@ router.delete('/:appId',function (req,res,next) {
     appController.deleteApp(req,res);
 });
 
-router.post('/start/:appId', function (req, res, next) {
+router.post('/:appId/start', function (req, res, next) {
     appController.startApp(req,res);
 });
 
-router.post('/stop/:appId', function (req, res, next) {
+router.post('/:appId/stop', function (req, res, next) {
     appController.stopApp(req,res);
-});
-
-router.get('/status/:appId',function (req,res,next) {
-    appController.checkAppStatus(req,res);
 });
 
 module.exports = router;
