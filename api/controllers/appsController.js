@@ -34,42 +34,65 @@ exports.addApp = function(req, res) {
                     message: 'Could not find that user',
                     error: err
                 });
-            var sendCommand = exec("bash /root/scripts/addApp.sh " + decoded.user.username +' '+ req.body.name +' '+ req.body.port, function(err, stdout, stderr) {
-                console.log("STDOUT: "+stdout);
-                console.log("STDERR: "+stderr);
-            });
-            sendCommand.on('exit', function (code) {
-                if (code != 0){
+            App.findOne({name:req.body.name},function (err,app) {
+                if(err)
                     return res.status(500).json({
-                        message: 'An error occurred while adding app.',
+                        message: 'An error occurred',
                         error: err
                     });
-                }
-                else{
-                    var app = new App({
-                        name:req.body.name,
-                        entryPoint:req.body.entryPoint,
-                        port:req.body.port,
-                        user:user
+                if(app)
+                    return res.status(500).json({
+                        message: 'App with that name already exists. Take another name.'
                     });
 
-                    app.save(function (err,result) {
-                        if(err)
+                App.findOne({port:req.body.port},function (err,app) {
+                    if (err)
+                        return res.status(500).json({
+                            message: 'An error occurred',
+                            error: err
+                        });
+                    if (app)
+                        return res.status(500).json({
+                            message: 'App with that port already exists. Use another port.'
+                        });
+
+                    var sendCommand = exec("bash /root/scripts/addApp.sh " + decoded.user.username +' '+ req.body.name +' '+ req.body.port, function(err, stdout, stderr) {
+                        console.log("STDOUT: "+stdout);
+                        console.log("STDERR: "+stderr);
+                    });
+                    sendCommand.on('exit', function (code) {
+                        if (code != 0){
                             return res.status(500).json({
-                                message: 'An error occurred',
+                                message: 'An error occurred while adding app.',
                                 error: err
                             });
+                        }
+                        else{
+                            var app = new App({
+                                name:req.body.name,
+                                entryPoint:req.body.entryPoint,
+                                port:req.body.port,
+                                user:user
+                            });
 
-                        user.apps.push(result);
-                        user.save();
-                        res.status(201).json({
-                            message: 'App added successfully.',
-                            obj: result
-                        });
+                            app.save(function (err,result) {
+                                if(err)
+                                    return res.status(500).json({
+                                        message: 'An error occurred',
+                                        error: err
+                                    });
+
+                                user.apps.push(result);
+                                user.save();
+                                res.status(201).json({
+                                    message: 'App added successfully.',
+                                    obj: result
+                                });
+                            });
+                        }
                     });
-                }
+                });
             });
-
         });
 };
 
