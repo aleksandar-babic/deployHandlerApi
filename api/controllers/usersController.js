@@ -1,26 +1,47 @@
 'use strict';
 var mongoose = require('mongoose');
+var sys = require('util');
+var exec = require('child_process').exec;
 var bcrypt = require('bcryptjs');
 var jwt = require('jsonwebtoken');
 
 var User = require('../models/usersModel');
 
 exports.register = function(req,res){
-    var user = new User({
-        username: req.body.username,
-        password: bcrypt.hashSync(req.body.password, 10),
-        email: req.body.email
-    });
-    user.save(function (err, result) {
-        if(err)
-            return res.status(500).json({
-                message: 'Error while registrating new user.',
-                error: err
-            });
-        res.status(201).json({
-            message: 'User created successfully.',
-            obj: result
+
+    if(!req.body.username || !req.body.email || !req.body.password)
+        return res.status(500).json({
+            message: "Malformed request to register, username, password and e-mail are required."
         });
+    var sendCommand = exec("bash /root/scripts/addUser.sh " + req.body.username+' '+ req.body.password, function(err, stdout, stderr) {
+        console.log("STDOUT: "+stdout);
+        console.log("STDERR: "+stderr);
+    });
+    sendCommand.on('exit', function (code) {
+        if (code != 0) {
+            return res.status(500).json({
+                message: 'An error occurred while registrating user on server.'
+            });
+        }
+        else {
+            var user = new User({
+                username: req.body.username,
+                password: bcrypt.hashSync(req.body.password, 10),
+                email: req.body.email
+            });
+            //TODO Do request data validation and call shell script to add user to NODE server
+            user.save(function (err, result) {
+                if(err)
+                    return res.status(500).json({
+                        message: 'Error while registrating new user.',
+                        error: err
+                    });
+                res.status(201).json({
+                    message: 'User created successfully.',
+                    obj: result
+                });
+            });
+        }
     });
 };
 
