@@ -29,6 +29,14 @@ exports.addApp = function(req, res) {
             return res.status(500).json({
                 message: 'App name, port and entry point are required.'
             });
+        if(req.body.name.toLowerCase() == 'api')
+            return res.status(500).json({
+                message: 'api subdomain name is reserved for internal use.'
+            });
+        if(req.body.port == '80' || req.body.port == '443')
+            return res.status(500).json({
+                message: 'Ports 80 and 443 are reserved for internal use.'
+            });
         if(count(req.body.entryPoint,'\\.') > 1)
             return res.status(500).json({
                 message: 'Entry point is not valid. Example: server.js'
