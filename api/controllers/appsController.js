@@ -9,6 +9,10 @@ var sleep = require('sleep');
 var App = require('../models/appsModel');
 var User = require('../models/usersModel');
 
+//Helper function to count number of  occurrences of specific character
+function count(s1, letter) {
+    return ( s1.match( RegExp(letter,'g') ) || [] ).length;
+}
 
 exports.getAppList = function(req, res) {
     var decoded = jwt.decode(req.query.token);
@@ -24,6 +28,10 @@ exports.addApp = function(req, res) {
         if(!req.body.name || !req.body.port || !req.body.entryPoint)
             return res.status(500).json({
                 message: 'App name, port and entry point are required.'
+            });
+        if(count(req.body.entryPoint,'\\.') > 1)
+            return res.status(500).json({
+                message: 'Entry point is not valid. Example: server.js'
             });
         User.findById(decoded.user._id,function (err,user) {
             if(err)
@@ -136,7 +144,6 @@ exports.updateApp = function(req, res) {
 
 };
 
-
 exports.deleteApp = function(req, res) {
     App.findById(req.params.appId, function(err, app) {
         if (err)
@@ -154,7 +161,6 @@ exports.deleteApp = function(req, res) {
             if (code != 0)
                 return res.status(500).json({ message: 'Error while deleting app.' });
             else{
-                //TODO Remove Cloudflare DNS entry for subdomain.
                 App.remove({_id: app._id}, function(err) {
                     if (err)
                         return res.status(404).send(err);
@@ -178,7 +184,6 @@ exports.startApp = function(req, res) {
         var sendCommand = exec("bash /root/scripts/startApp.sh " + decoded.user.username + ' ' + app.name + ' ' + app.entryPoint, function(err, stdout, stderr) {
             console.log(stdout);
         });
-
         sendCommand.on('exit', function (code) {
             if (code == 2)
                 return res.status(500).json({ message: 'App is already started.' });
