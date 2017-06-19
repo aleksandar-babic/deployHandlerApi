@@ -5,6 +5,7 @@ var exec = require('child_process').exec;
 var jwt = require('jsonwebtoken');
 var portscanner = require('portscanner');
 var sleep = require('sleep');
+const replace = require('replace-in-file');
 
 var App = require('../models/appsModel');
 var User = require('../models/usersModel');
@@ -28,6 +29,10 @@ exports.addApp = function(req, res) {
         if(!req.body.name || !req.body.port || !req.body.entryPoint)
             return res.status(500).json({
                 message: 'App name, port and entry point are required.'
+            });
+        if(!(/^\d+$/.test(req.body.port)))
+            return res.status(500).json({
+                message: 'Port can only contain digits.'
             });
         if(req.body.name.toLowerCase() == 'api')
             return res.status(500).json({
@@ -87,7 +92,7 @@ exports.addApp = function(req, res) {
                         }
                         else{
                             var app = new App({
-                                name:req.body.name,
+                                name:req.body.name.toLowerCase(),
                                 entryPoint:req.body.entryPoint,
                                 port:req.body.port,
                                 user:user
@@ -130,6 +135,10 @@ exports.viewApp = function(req, res) {
 
 exports.updateApp = function(req, res) {
 
+    if(!req.body.name && !req.body.port && !req.body.entryPoint)
+        return res.status(500).json({
+            message: 'Request has to contain atleast one of following : name, entryPoint, port.',
+        });
     App.findById(req.params.appId, function(err, app) {
         if (err)
             return res.status(500).send(err);
@@ -139,13 +148,66 @@ exports.updateApp = function(req, res) {
         if(decoded.user._id != app.user)
             return res.status(401).json({ message: 'That app does not belong to you.'});
 
-        App.findOneAndUpdate({'_id':req.params.appId}, req.body, {new: true}, function(err, app){
+        if(req.body.port && !(/^\d+$/.test(req.body.port)))
+            return res.status(500).json({
+                message: 'Port can only contain digits.'
+            });
+        if(req.body.name && req.body.name.toLowerCase() == 'api')
+            return res.status(500).json({
+                message: 'api subdomain name is reserved for internal use.'
+            });
+        if(req.body.port && (req.body.port == '80' || req.body.port == '443'))
+            return res.status(500).json({
+                message: 'Ports 80 and 443 are reserved for internal use.'
+            });
+        if(req.body.entryPoint && (count(req.body.entryPoint,'\\.') > 1))
+            return res.status(500).json({
+                message: 'Entry point is not valid. Example: server.js'
+            });
+        if(req.body.name && req.body.name != app.name) {
+            const options = {
+                files: '/etc/nginx/sites-available/' + app.name + '.deployhandler.com',
+                from: app.name,
+                to: req.body.name
+            };
+            try {
+                let changedFile = replace.sync(options);
+                console.log("Changed file: " + changedFile);
+                try{
+                    require('child_process').execSync("bash /root/scripts/renameApp.sh " + app.name +' '+ req.body.name);
+                    app.name = req.body.name;
+                }
+                catch (e){
+                    return res.status(500).json({ message: 'Error while updating app, server side.' });
+                }
+            }
+            catch (e) {
+                console.error('Error occurred:', e);
+            }
+        }
+        if(req.body.entryPoint && req.body.entryPoint != app.entryPoint)
+            app.entryPoint = req.body.entryPoint;
+        if(req.body.port && req.body.port != app.port) {
+            const options = {
+                files: '/etc/nginx/sites-available/' + app.name + '.deployhandler.com',
+                from: app.port,
+                to: req.body.port
+            };
+            try {
+                let changedFile = replace.sync(options);
+                console.log("Changed file: " + changedFile);
+                app.port = req.body.port;
+            }
+            catch (e) {
+                console.error('Error occurred:', e);
+            }
+        }
+        app.save(function (err) {
             if (err)
-                return res.status(500).send(err);
-            if (!app)
-                return res.status(404).json({ message: 'Could not find app with that id.' });
-
-            //TODO allow port or app name to be changed (Must write new util script)
+                return res.status(500).json({
+                    message: 'Error while updating app.',
+                    error: err
+                });
             return res.status(200).json(app);
         });
     });

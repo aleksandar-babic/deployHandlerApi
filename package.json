@@ -27,6 +27,7 @@
     "mongoose-unique-validator": "^1.0.5",
     "path": "^0.12.7",
     "portscanner": "*",
+    "replace-in-file": "^2.5.0",
     "sleep": "^5.1.1",
     "swagger-ui-express": "^2.0.0"
   }
