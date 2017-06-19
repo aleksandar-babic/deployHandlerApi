@@ -3,6 +3,8 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var mongoose = require('mongoose');
+const swaggerUi = require('swagger-ui-express');
+const swaggerDocument = require('./docs.json');
 
 var appsRoute = require('./api/routes/appsRoutes');
 var usersRoute = require('./api/routes/usersRoutes');
@@ -25,13 +27,11 @@ app.use(function (req, res, next) {
 
 app.use('/api/apps', appsRoute);
 app.use('/api/users', usersRoute);
+app.use('/', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 var port = process.env.PORT || 3000;
 app.listen(port);
 
-app.get('/', function(req, res) {
-    res.send('Hi there, welcome! The DeployHandler API is at http://deployhandler.com:' + port + '/api');
-});
 
 console.log('DeployHandler API server up on : ' + port);
 

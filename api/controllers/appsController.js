@@ -163,7 +163,7 @@ exports.deleteApp = function(req, res) {
             else{
                 app.remove(function (err,result) {
                     if (err)
-                        return res.status(404).send(err);
+                        return res.status(500).send(err);
                     return res.status(200).json({ message: 'App has been deleted.' });
                 });
             }

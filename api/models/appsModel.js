@@ -12,7 +12,7 @@ var AppSchema = new Schema({
         unique: true,
         uniqueCaseInsensitive: true
     },
-    Created_date: {
+    createdDate: {
         type: Date,
         default: Date.now
     },
