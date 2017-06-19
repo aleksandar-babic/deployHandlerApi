@@ -40,7 +40,7 @@ var AppSchema = new Schema({
 
 AppSchema.post('remove', function (app) {
     User.findById(app.user, function (err, user) {
-        user.apps.pull(app);
+        user.apps.pull(app._id);
         user.save();
     });
 });

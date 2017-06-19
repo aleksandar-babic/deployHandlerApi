@@ -161,7 +161,7 @@ exports.deleteApp = function(req, res) {
             if (code != 0)
                 return res.status(500).json({ message: 'Error while deleting app.' });
             else{
-                App.remove({_id: app._id}, function(err) {
+                app.remove(function (err,result) {
                     if (err)
                         return res.status(404).send(err);
                     return res.status(200).json({ message: 'App has been deleted.' });
