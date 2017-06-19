@@ -13,34 +13,57 @@ exports.register = function(req,res){
         return res.status(500).json({
             message: "Malformed request to register. username, password and e-mail are required."
         });
-    var sendCommand = exec("bash /root/scripts/addUser.sh " + req.body.username+' '+ req.body.password, function(err, stdout, stderr) {
-        console.log("STDOUT: "+stdout);
-        console.log("STDERR: "+stderr);
-    });
-    sendCommand.on('exit', function (code) {
-        if (code != 0) {
+    User.findOne({username:req.body.username}, function (err,user) {
+        if(err)
             return res.status(500).json({
-                message: 'An error occurred while registrating user on server.'
+                message: 'Error while registrating new user.',
+                error: err
             });
-        }
-        else {
-            var user = new User({
-                username: req.body.username,
-                password: bcrypt.hashSync(req.body.password, 10),
-                email: req.body.email
+        if(user)
+            return res.status(500).json({
+                message: 'Username is already taken.'
             });
-            user.save(function (err, result) {
-                if(err)
-                    return res.status(500).json({
-                        message: 'Error while registrating new user.',
-                        error: err
-                    });
-                res.status(201).json({
-                    message: 'User created successfully.',
-                    obj: result
+        User.findOne({email:req.body.email}, function (err,user) {
+            if(err)
+                return res.status(500).json({
+                    message: 'Error while registrating new user',
+                    error: err
                 });
+            if(user)
+                return res.status(500).json({
+                    message: 'E-mail is already used by user ' + user.username + '.'
+                });
+
+            var sendCommand = exec("bash /root/scripts/addUser.sh " + req.body.username+' '+ req.body.password, function(err, stdout, stderr) {
+                console.log("STDOUT: "+stdout);
+                console.log("STDERR: "+stderr);
             });
-        }
+            sendCommand.on('exit', function (code) {
+                if (code != 0) {
+                    return res.status(500).json({
+                        message: 'An error occurred while registrating user on server.'
+                    });
+                }
+                else {
+                    var user = new User({
+                        username: req.body.username,
+                        password: bcrypt.hashSync(req.body.password, 10),
+                        email: req.body.email
+                    });
+                    user.save(function (err, result) {
+                        if(err)
+                            return res.status(500).json({
+                                message: 'Error while registrating new user.',
+                                error: err
+                            });
+                        res.status(201).json({
+                            message: 'User created successfully.',
+                            obj: result
+                        });
+                    });
+                }
+            });
+        })
     });
 };
 
