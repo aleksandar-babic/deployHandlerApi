@@ -19,7 +19,7 @@ var UserSchema = new Schema({
         unique: true,
         required: true
     },
-    Created_date: {
+    createdDate: {
         type: Date,
         default: Date.now
     },

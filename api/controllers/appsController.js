@@ -3,6 +3,8 @@ var mongoose = require('mongoose');
 var sys = require('util');
 var exec = require('child_process').exec;
 var jwt = require('jsonwebtoken');
+var portscanner = require('portscanner');
+var sleep = require('sleep');
 
 var App = require('../models/appsModel');
 var User = require('../models/usersModel');
@@ -104,7 +106,7 @@ exports.viewApp = function(req, res) {
             return res.status(404).json({ message: 'Could not find app with that id.' });
         var decoded = jwt.decode(req.query.token);
         if(decoded.user._id != app.user)
-            return res.status(500).json({ message: 'That app does not belong to you.'});
+            return res.status(401).json({ message: 'That app does not belong to you.'});
 
         return res.status(200).json(app);
     });
@@ -119,7 +121,7 @@ exports.updateApp = function(req, res) {
             return res.status(404).json({ message: 'Could not find app with that id.' });
         var decoded = jwt.decode(req.query.token);
         if(decoded.user._id != app.user)
-            return res.status(500).json({ message: 'That app does not belong to you.'});
+            return res.status(401).json({ message: 'That app does not belong to you.'});
 
         App.findOneAndUpdate({'_id':req.params.appId}, req.body, {new: true}, function(err, app){
             if (err)
@@ -143,7 +145,7 @@ exports.deleteApp = function(req, res) {
             return res.status(404).json({ message: 'Could not find app with that id.' });
         var decoded = jwt.decode(req.query.token);
         if(decoded.user._id != app.user)
-            return res.status(500).json({ message: 'That app does not belong to you.'});
+            return res.status(401).json({ message: 'That app does not belong to you.'});
 
         var sendCommand = exec("bash /root/scripts/removeApp.sh " + decoded.user.username +' '+ app.name, function(err, stdout, stderr) {
             console.log(stdout);
@@ -171,7 +173,7 @@ exports.startApp = function(req, res) {
             return res.status(404).json({ message: 'Could not find app with that id.' });
         var decoded = jwt.decode(req.query.token);
         if(decoded.user._id != app.user)
-            return res.status(500).json({ message: 'That app does not belong to you.'});
+            return res.status(401).json({ message: 'That app does not belong to you.'});
 
         var sendCommand = exec("bash /root/scripts/startApp.sh " + decoded.user.username + ' ' + app.name + ' ' + app.entryPoint, function(err, stdout, stderr) {
             console.log(stdout);
@@ -183,10 +185,20 @@ exports.startApp = function(req, res) {
             else if(code == 1)
                 return res.status(500).json({ message: 'App start FAILED.' });
             else{
-                //TODO Improve check of app status
-                app.status = "started";
-                app.save();
-                return res.status(200).json({ message: 'App has been started.' });
+                sleep.sleep(1); //Sleep for 1 seconds just in case, make sure that pm2 has actually started app
+                portscanner.checkPortStatus(app.port, '127.0.0.1', function(error, status) {
+                    if(status=='open') {
+                        app.status = "started";
+                        app.save();
+                        return res.status(200).json({
+                            message: 'App has been started.',
+                            obj:app
+                        });
+                    }
+                    else {
+                        return res.status(500).json({ message: 'App start FAILED.' });
+                    }
+                });
             }
         });
     });
@@ -200,11 +212,9 @@ exports.stopApp = function(req, res) {
             return res.status(404).json({ message: 'Could not find app with that id.' });
         var decoded = jwt.decode(req.query.token);
         if(decoded.user._id != app.user)
-            return res.status(500).json({ message: 'That app does not belong to you.'});
+            return res.status(401).json({ message: 'That app does not belong to you.'});
 
         var sendCommand = exec("bash /root/scripts/stopApp.sh " + app.name , function(err, stdout, stderr) {
-            //if (err)
-                //return res.status(500).json({ message: 'Error while stopping app.' });
             console.log(stdout);
         });
 
@@ -212,9 +222,15 @@ exports.stopApp = function(req, res) {
             if(code == 1)
                 return res.status(500).json({ message: 'App is already stopped' });
             else{
-                app.status = "stopped";
-                app.save();
-                return res.status(200).json({ message: 'App has been stopped.' });
+                portscanner.checkPortStatus(app.port, '127.0.0.1', function(error, status) {
+                    if(status=='open')
+                        return res.status(500).json({ message: 'App stop FAILED.' });
+                    else {
+                        app.status = "stopped";
+                        app.save();
+                        return res.status(200).json({ message: 'App has been stopped.' });
+                    }
+                });
             }
         });
     });
