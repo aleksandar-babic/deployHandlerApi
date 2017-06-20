@@ -35,6 +35,10 @@ exports.addApp = function(req, res) {
             return res.status(500).json({
                 message: 'Port can only contain digits.'
             });
+        if(req.body.name && /\s/.test(req.body.name))
+            return res.status(500).json({
+                message: 'App name cannot contain space.'
+            });
         if(req.body.name.toLowerCase() == 'api')
             return res.status(500).json({
                 message: 'api subdomain name is reserved for internal use.'
@@ -153,6 +157,11 @@ exports.updateApp = function(req, res) {
             return res.status(500).json({
                 message: 'Port can only contain digits.'
             });
+        if(req.body.name && /\s/.test(req.body.name))
+            return res.status(500).json({
+                message: 'App name cannot contain space.'
+            });
+
         if(req.body.name && req.body.name.toLowerCase() == 'api')
             return res.status(500).json({
                 message: 'api subdomain name is reserved for internal use.'
