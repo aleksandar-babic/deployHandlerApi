@@ -2,6 +2,7 @@
 var mongoose = require('mongoose');
 var sys = require('util');
 var exec = require('child_process').exec;
+var execSync = require('child_process').execSync;
 var jwt = require('jsonwebtoken');
 var portscanner = require('portscanner');
 var sleep = require('sleep');
@@ -173,16 +174,12 @@ exports.updateApp = function(req, res) {
             try {
                 let changedFile = replace.sync(options);
                 console.log("Changed file: " + changedFile);
-                try{
-                    require('child_process').execSync("bash /root/scripts/renameApp.sh " + app.name +' '+ req.body.name);
-                    app.name = req.body.name;
-                }
-                catch (e){
-                    return res.status(500).json({ message: 'Error while updating app, server side.' });
-                }
+                var decoded = jwt.decode(req.query.token);
+                execSync("bash /root/scripts/renameApp.sh " + app.name + ' ' + req.body.name + ' ' + decoded.user.username);
+                app.name = req.body.name;
             }
             catch (e) {
-                console.error('Error occurred:', e);
+                return res.status(500).json({ message: 'Error while updating app, server side.' });
             }
         }
         if(req.body.entryPoint && req.body.entryPoint != app.entryPoint)
