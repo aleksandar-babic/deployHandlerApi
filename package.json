@@ -25,6 +25,7 @@
     "jsonwebtoken": "^7.4.1",
     "mongoose": "^4.10.4",
     "mongoose-unique-validator": "^1.0.5",
+    "os-utils": "0.0.14",
     "path": "^0.12.7",
     "portscanner": "*",
     "replace-in-file": "^2.5.0",

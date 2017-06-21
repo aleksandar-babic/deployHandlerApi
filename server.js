@@ -8,6 +8,7 @@ const swaggerDocument = require('./docs.json');
 
 var appsRoute = require('./api/routes/appsRoutes');
 var usersRoute = require('./api/routes/usersRoutes');
+var statsRoute = require('./api/routes/statsRoutes');
 
 var app = express();
 mongoose.Promise = global.Promise;
@@ -21,12 +22,13 @@ app.use(cookieParser());
 app.use(function (req, res, next) {
     res.setHeader('Access-Control-Allow-Origin', '*'); //Will change to actual Internal network IP
     res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-    res.setHeader('Access-Control-Allow-Methods', 'POST, GET, PATCH, DELETE, OPTIONS');
+    res.setHeader('Access-Control-Allow-Methods', 'POST, GET, PATCH, PUT, DELETE, OPTIONS');
     next();
 });
 
 app.use('/api/apps', appsRoute);
 app.use('/api/users', usersRoute);
+app.use('/api/stats', statsRoute);
 app.use('/', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 var port = process.env.PORT || 3000;
