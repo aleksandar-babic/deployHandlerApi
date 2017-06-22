@@ -28,7 +28,9 @@ var AppSchema = new Schema({
         required: true
     },
     port:{
-        type: String,
+        type: Number,
+        min: 1024,
+        max: 49150,
         required: true,
         unique: true
     },

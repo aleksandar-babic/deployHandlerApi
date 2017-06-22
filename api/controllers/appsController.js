@@ -43,9 +43,9 @@ exports.addApp = function(req, res) {
             return res.status(500).json({
                 message: 'api subdomain name is reserved for internal use.'
             });
-        if(req.body.port == '80' || req.body.port == '443')
+        if(parseInt(req.body.port) < 1024 || parseInt(req.body.port) > 49150)
             return res.status(500).json({
-                message: 'Ports 80 and 443 are reserved for internal use.'
+                message: 'Apps can only use port range of 1024-49150.'
             });
         if(count(req.body.entryPoint,'\\.') > 1)
             return res.status(500).json({
