@@ -23,7 +23,6 @@ exports.getStats = function(req, res) {
             running:0
         }
     };
-
     App.find({'user': decoded.user._id}, function(err, apps) {
         if (err)
             return res.status(500).send(err);
@@ -32,8 +31,8 @@ exports.getStats = function(req, res) {
             if(app.status == 'running')
                 stats.apps.running++;
         });
-
         os.cpuUsage(function(v){
+            stats.cpu.load=parseFloat(v).toFixed(2);
             stats.cpu.usage=parseFloat(v).toFixed(2) * 100.0;
             stats.ram.usage = parseFloat(1-os.freememPercentage()).toFixed(2) * 100.0;
             stats.ram.total=parseFloat(os.totalmem()).toFixed(0);
