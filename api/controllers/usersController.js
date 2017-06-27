@@ -13,6 +13,15 @@ exports.register = function(req,res){
         return res.status(500).json({
             message: "Malformed request to register. username, password and e-mail are required."
         });
+    if(/\s/.test(req.body.username))
+        return res.status(500).json({
+            message: 'Username cannot contain any spaces.'
+        });
+    var emailRegex = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    if(!emailRegex.test(req.body.email))
+        return res.status(500).json({
+            message: 'E-mail address is not valid.'
+        });
     User.findOne({username:req.body.username}, function (err,user) {
         if(err)
             return res.status(500).json({
