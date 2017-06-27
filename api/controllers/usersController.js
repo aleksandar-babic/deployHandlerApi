@@ -91,14 +91,12 @@ exports.login = function(req,res){
         //True if no user found in database
         if (!user)
             return res.status(401).json({
-                message: 'Login failed',
-                error: {message: 'Invalid login credentials'}
+                message: 'Invalid login credentials'
             });
         // True if password from request does not match decrypted database password
         if (!bcrypt.compareSync(req.body.password, user.password))
             return res.status(401).json({
-                message: 'Login failed',
-                error: {message: 'Invalid login credentials'}
+                message: 'Invalid login credentials'
             });
         //Signing new token ,putting whole user object in it
         var token = jwt.sign({user: user}, 'secret', {expiresIn: 7200});
