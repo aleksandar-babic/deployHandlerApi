@@ -28,7 +28,7 @@ exports.getStats = function(req, res) {
             return res.status(500).send(err);
         apps.forEach(function (app) {
             stats.apps.total ++;
-            if(app.status == 'running')
+            if(app.status == 'started')
                 stats.apps.running++;
         });
         os.cpuUsage(function(v){
