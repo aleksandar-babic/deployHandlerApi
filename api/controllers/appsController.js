@@ -153,6 +153,10 @@ exports.updateApp = function(req, res) {
         if(decoded.user._id != app.user)
             return res.status(401).json({ message: 'That app does not belong to you.'});
 
+        if(app.status == 'started')
+            return res.status(500).json({
+                message: 'App must be stopped before it can be modified.'
+            });
         if(req.body.port && !(/^\d+$/.test(req.body.port)))
             return res.status(500).json({
                 message: 'Port can only contain digits.'
@@ -261,8 +265,14 @@ exports.startApp = function(req, res) {
             console.log(stdout);
         });
         sendCommand.on('exit', function (code) {
-            if (code == 2)
-                return res.status(500).json({ message: 'App is already started.' });
+            if (code == 2) {
+                portscanner.checkPortStatus(app.port, '127.0.0.1', function (error, status) {
+                    if (status == 'open')
+                        return res.status(500).json({message: 'App is already started.'});
+                    else
+                        return res.status(500).json({message: 'App start FAILED.'});
+                });
+            }
             else if(code == 1)
                 return res.status(500).json({ message: 'App start FAILED.' });
             else{
