@@ -99,7 +99,7 @@ exports.login = function(req,res){
                 message: 'Invalid login credentials'
             });
         //Signing new token ,putting whole user object in it
-        var token = jwt.sign({user: user}, 'secret', {expiresIn: 7200});
+        var token = jwt.sign({user: user}, 'secret', {expiresIn: 1200});
         //Returning JSON with token
         res.status(200).json({
             message: 'Successfully logged in',
