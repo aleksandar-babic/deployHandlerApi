@@ -45,4 +45,8 @@ router.post('/:appId/stop', function (req, res, next) {
     appController.stopApp(req,res);
 });
 
+router.post('/:appId/install', function (req, res, next) {
+    appController.npmInstall(req,res);
+});
+
 module.exports = router;

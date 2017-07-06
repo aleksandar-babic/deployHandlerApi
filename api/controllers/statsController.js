@@ -5,7 +5,6 @@ var os = require('os-utils');
 
 var App = require('../models/appsModel');
 
-//TODO DOCS For stats
 exports.getStats = function(req, res) {
     var decoded = jwt.decode(req.query.token);
     var stats = {

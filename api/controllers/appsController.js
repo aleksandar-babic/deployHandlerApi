@@ -326,3 +326,21 @@ exports.stopApp = function(req, res) {
         });
     });
 };
+
+//TODO Add endpoint to docs
+exports.npmInstall = function (req,res) {
+    App.findById(req.params.appId, function(err, app) {
+        if (err)
+            return res.status(500).send(err);
+        if (!app)
+            return res.status(404).json({message: 'Could not find app with that id.'});
+        var decoded = jwt.decode(req.query.token);
+        if (decoded.user._id != app.user)
+            return res.status(401).json({message: 'That app does not belong to you.'});
+
+        exec("cd " + "/home/" + decoded.user.username + "/" + app.name + " && npm install", function(err, stdout, stderr) {
+            if (err) return res.status(500).json({message: 'Error while starting npm install.',obj: err});
+            res.status(200).json({output: stdout});
+        });
+    });
+};
