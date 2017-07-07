@@ -109,3 +109,44 @@ exports.login = function(req,res){
     });
 };
 
+exports.changePassword = function (req,res) {
+    if(!req.body.current || !req.body.new)
+        return res.status(500).json({
+            message: 'Both current and new password are required'
+        });
+    if(req.body.current.length < 6 || req.body.new.length < 6)
+        return res.status(500).json({
+            message: 'Minimum allowed length of password is 6'
+        });
+    if(req.body.current == req.body.new)
+        return res.status(500).json({
+            message: 'New password cannot be same as current password.'
+        });
+
+    var decoded = jwt.decode(req.query.token);
+    User.findOne({username:decoded.user.username},function (err,user) {
+        if(err)
+            return res.status(500).json({
+                message: 'An error occurred while changing password.',
+                error: err
+            });
+        //Verify that current password from request is correct
+        if (!bcrypt.compareSync(req.body.current, user.password))
+            return res.status(401).json({
+                message: 'Wrong current password'
+            });
+        //Set new password
+        user.password = bcrypt.hashSync(req.body.new, 10);
+        user.save(function (err) {
+            if(err)
+                return res.status(500).json({
+                    message: 'An error occurred while changing password.',
+                    error: err
+                });
+            res.status(200).json({success:true});
+        });
+    });
+
+
+};
+

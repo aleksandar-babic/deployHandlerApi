@@ -327,7 +327,6 @@ exports.stopApp = function(req, res) {
     });
 };
 
-
 exports.npmInstall = function (req,res) {
     App.findById(req.params.appId, function(err, app) {
         if (err)
