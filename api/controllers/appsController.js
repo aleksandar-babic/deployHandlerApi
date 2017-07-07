@@ -327,7 +327,7 @@ exports.stopApp = function(req, res) {
     });
 };
 
-//TODO Add endpoint to docs
+
 exports.npmInstall = function (req,res) {
     App.findById(req.params.appId, function(err, app) {
         if (err)
