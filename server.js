@@ -9,6 +9,7 @@ const swaggerDocument = require('./docs.json');
 var appsRoute = require('./api/routes/appsRoutes');
 var usersRoute = require('./api/routes/usersRoutes');
 var statsRoute = require('./api/routes/statsRoutes');
+var todosRoute = require('./api/routes/todosRoutes');
 
 var app = express();
 mongoose.Promise = global.Promise;
@@ -29,6 +30,7 @@ app.use(function (req, res, next) {
 app.use('/api/apps', appsRoute);
 app.use('/api/users', usersRoute);
 app.use('/api/stats', statsRoute);
+app.use('/api/todos', todosRoute);
 app.use('/', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 var port = process.env.PORT || 3000;

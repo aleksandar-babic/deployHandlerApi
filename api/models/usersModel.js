@@ -26,6 +26,10 @@ var UserSchema = new Schema({
     apps:[{
         type: Schema.Types.ObjectId,
         ref: 'Apps'
+    }],
+    todos:[{
+        type: Schema.Types.ObjectId,
+        ref: 'Todos'
     }]
 });
 
