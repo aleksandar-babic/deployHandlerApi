@@ -108,7 +108,6 @@ exports.login = function(req,res){
     });
 };
 
-//TODO Add SFTP password change
 exports.changePassword = function (req,res) {
     if(!req.body.current || !req.body.new)
         return res.status(500).json({
@@ -135,18 +134,31 @@ exports.changePassword = function (req,res) {
             return res.status(401).json({
                 message: 'Wrong current password'
             });
-        //Set new password
-        user.password = bcrypt.hashSync(req.body.new, 10);
-        user.save(function (err) {
-            if(err)
+
+        //Set new password on server
+        var prepareCommand = 'yes ' + req.body.new + ' | passwd ' + user.username + ' > /dev/null 2>&1';
+        var sendCommand = exec(prepareCommand, function(err, stdout, stderr) {
+            if(stderr)
+                console.log(stderr);
+        });
+
+        sendCommand.on('exit', function (code) {
+            if (code != 0)
                 return res.status(500).json({
-                    message: 'An error occurred while changing password.',
-                    error: err
+                    message: 'An error occurred while changing password on server.'
                 });
-            res.status(200).json({success:true});
+
+            //Set new password in db
+            user.password = bcrypt.hashSync(req.body.new, 10);
+            user.save(function (err) {
+                if(err)
+                    return res.status(500).json({
+                        message: 'An error occurred while changing password.',
+                        error: err
+                    });
+                res.status(200).json({success:true});
+            });
         });
     });
-
-
 };
 
