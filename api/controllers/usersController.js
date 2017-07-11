@@ -108,6 +108,7 @@ exports.login = function(req,res){
     });
 };
 
+//TODO Add SFTP password change
 exports.changePassword = function (req,res) {
     if(!req.body.current || !req.body.new)
         return res.status(500).json({

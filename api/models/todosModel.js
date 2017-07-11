@@ -2,6 +2,8 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
+var User = require('./usersModel');
+
 var TodoSchema = new Schema({
     message: {
         type: String,
@@ -9,6 +11,7 @@ var TodoSchema = new Schema({
     },
     isComplete:{
         type: Boolean,
+        default: false
     },
     user:{
         type: Schema.Types.ObjectId,

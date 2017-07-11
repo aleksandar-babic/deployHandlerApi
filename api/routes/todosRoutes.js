@@ -26,6 +26,10 @@ router.post('/',function (req,res,next) {
     todosController.addTodo(req,res,next);
 });
 
+router.put('/:todoId',function (req,res,next) {
+    todosController.setDone(req,res,next);
+});
+
 router.delete('/:todoId',function (req,res,next) {
     todosController.deleteTodo(req,res,next);
 });
