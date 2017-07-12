@@ -30,6 +30,19 @@ router.post('/changepw',function (req,res,next) {
     usersController.changePassword(req,res);
 });
 
+//Ensure request has proper token as query string
+router.use('/close-account', function (req, res, next) {
+    jwt.verify(req.query.token, 'secret', function (err, decoded) {
+        if (err) {
+            return res.status(401).json({
+                title: 'Not Authenticated',
+                error: err
+            });
+        }
+        next();
+    })
+});
+
 router.delete('/close-account',function (req,res) {
     usersController.closeAccount(req,res);
 });
