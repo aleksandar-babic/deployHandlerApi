@@ -5,6 +5,8 @@ var bcrypt = require('bcryptjs');
 var jwt = require('jsonwebtoken');
 
 var User = require('../models/usersModel');
+var App = require('../models/appsModel');
+var Todo = require('../models/todosModel');
 
 exports.register = function(req,res){
 
@@ -161,4 +163,53 @@ exports.changePassword = function (req,res) {
         });
     });
 };
+
+exports.closeAccount = function (req,res) {
+    var decoded = jwt.decode(req.query.token);
+    User.findOne({username:decoded.user.username},function (err,user) {
+        if(decoded.user._id != user._id)
+            return res.status(403).json({
+                message: 'You are allowed to close only your account.'
+            });
+
+        //Remove all apps from server and remove user from server(including users home dir)
+        var prepareCommand = '/root/scripts/removeUser.sh ' + user.username;
+        var sendCommand = exec(prepareCommand, function(err, stdout, stderr) {
+            if(stderr)
+                console.log(stderr);
+        });
+        sendCommand.on('exit',function (code) {
+            if(code != 0)
+                return res.status(500).json({
+                    message: 'Error while deleting user data from server.'
+                });
+
+                //Delete all Todos from user
+                Todo.remove({user:user._id},function (err) {
+                    if (err)
+                        return res.status(500).json({
+                            message: 'Error while deleting users Todos'
+                        });
+                    //Delete all Apps from user
+                    App.remove({user:user._id},function (err) {
+                        if (err)
+                            return res.status(500).json({
+                                message: 'Error while deleting users Apps'
+                            });
+                        //Actually remove user from db
+                        user.remove(function (err) {
+                            if (err)
+                                return res.status(500).json({
+                                    message: 'Error while deleting user'
+                                });
+                            //Everything went well, everything is wiped
+                            return res.status(200).json({
+                                message: 'Sorry to see you leaving. Have a good one.'
+                            });
+                        });
+                    });
+                });
+        });
+    });
+}
 

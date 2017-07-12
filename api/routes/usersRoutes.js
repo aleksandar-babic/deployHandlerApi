@@ -30,4 +30,8 @@ router.post('/changepw',function (req,res,next) {
     usersController.changePassword(req,res);
 });
 
+router.delete('/close-account',function (req,res) {
+    usersController.closeAccount(req,res);
+});
+
 module.exports = router;

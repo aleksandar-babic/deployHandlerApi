@@ -25,6 +25,7 @@ exports.getAppList = function(req, res) {
     });
 };
 
+//TODO Force lower case for app name
 exports.addApp = function(req, res) {
         var decoded = jwt.decode(req.query.token);
         if(!req.body.name || !req.body.port || !req.body.entryPoint)
