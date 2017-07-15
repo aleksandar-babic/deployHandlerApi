@@ -25,7 +25,7 @@ exports.getAppList = function(req, res) {
     });
 };
 
-//TODO Force lower case for app name
+
 exports.addApp = function(req, res) {
         var decoded = jwt.decode(req.query.token);
         if(!req.body.name || !req.body.port || !req.body.entryPoint)
@@ -39,6 +39,10 @@ exports.addApp = function(req, res) {
         if(/\s/.test(req.body.name))
             return res.status(500).json({
                 message: 'App name cannot contain space.'
+            });
+        if(! /^[a-z1-9-]+$/.test(req.body.name))
+            return res.status(500).json({
+                message: 'App name can contain only characters,numbers and dash.'
             });
         if(req.body.name.toLowerCase() == 'api')
             return res.status(500).json({
