@@ -52,10 +52,19 @@ exports.addApp = function(req, res) {
             return res.status(500).json({
                 message: 'Apps can only use port range of 1024-49150.'
             });
-        if(count(req.body.entryPoint,'\\.') > 1)
+
+
+        if((count(req.body.entryPoint,'\\.') > 1 || new RegExp('\\s').test(req.body.entryPoint)) &&
+            (!(req.body.isNpm == 'true') || !req.body.isNpm))
             return res.status(500).json({
                 message: 'Entry point is not valid. Example: server.js'
             });
+
+        if((count(req.body.entryPoint,'\\.') > 1) && ((req.body.isNpm == 'true') && req.body.isNpm))
+            return res.status(500).json({
+                message: 'Entry point is not valid. Example: server.js'
+            });
+
         User.findById(decoded.user._id,function (err,user) {
             if(err)
                 return res.status(500).json({
@@ -93,6 +102,7 @@ exports.addApp = function(req, res) {
                         console.log("STDOUT: "+stdout);
                         console.log("STDERR: "+stderr);
                     });
+
                     sendCommand.on('exit', function (code) {
                         if (code != 0){
                             return res.status(500).json({
@@ -101,13 +111,21 @@ exports.addApp = function(req, res) {
                             });
                         }
                         else{
-                            var app = new App({
-                                name:req.body.name.toLowerCase(),
-                                entryPoint:req.body.entryPoint,
-                                port:req.body.port,
-                                user:user
-                            });
-
+                            if((req.body.isNpm === 'true') && req.body.isNpm) {
+                                var app = new App({
+                                    name: req.body.name.toLowerCase(),
+                                    entryPoint: 'npm.'+req.body.entryPoint,
+                                    port: req.body.port,
+                                    user: user
+                                });
+                            }else {
+                                var app = new App({
+                                    name: req.body.name.toLowerCase(),
+                                    entryPoint: req.body.entryPoint,
+                                    port: req.body.port,
+                                    user: user
+                                });
+                            }
                             app.save(function (err,result) {
                                 if(err)
                                     return res.status(500).json({
@@ -119,7 +137,7 @@ exports.addApp = function(req, res) {
                                 user.save();
                                 res.status(201).json({
                                     message: 'App added successfully.',
-                                    obj: result
+                                    obj: app
                                 });
                             });
                         }
@@ -256,19 +274,29 @@ exports.deleteApp = function(req, res) {
     });
 };
 
+
 exports.startApp = function(req, res) {
     App.findById(req.params.appId, function(err, app) {
         if (err)
             return res.status(500).send(err);
         if (!app)
             return res.status(404).json({ message: 'Could not find app with that id.' });
+
         var decoded = jwt.decode(req.query.token);
         if(decoded.user._id != app.user)
             return res.status(401).json({ message: 'That app does not belong to you.'});
 
-        var sendCommand = exec("bash /root/scripts/startApp.sh " + decoded.user.username + ' ' + app.name + ' ' + app.entryPoint, function(err, stdout, stderr) {
-            console.log(stdout);
-        });
+        if(app.entryPoint.indexOf('npm.') !== -1){
+            var npmCommand = app.entryPoint.split('.');
+            console.log('Detected NPM: ' + npmCommand[1]);
+            var sendCommand = exec("bash /root/scripts/startApp.sh " + decoded.user.username + ' ' + app.name + ' - ' + npmCommand[1], function(err, stdout, stderr) {
+                console.log(stdout);
+            });
+        } else {
+            var sendCommand = exec("bash /root/scripts/startApp.sh " + decoded.user.username + ' ' + app.name + ' ' + app.entryPoint, function (err, stdout, stderr) {
+                console.log(stdout);
+            });
+        }
         sendCommand.on('exit', function (code) {
             if (code == 2) {
                 portscanner.checkPortStatus(app.port, '127.0.0.1', function (error, status) {
@@ -292,7 +320,11 @@ exports.startApp = function(req, res) {
                         });
                     }
                     else {
-                        return res.status(500).json({ message: 'App start FAILED.' });
+                        //Clean app remainings if app start failed
+                        var sendCommand = exec("bash /root/scripts/stopApp.sh " + app.name , function(err, stdout, stderr) {
+                            console.log('Cleaning trash from app that failed to start.');
+                            return res.status(500).json({ message: 'App start FAILED.' });
+                        });
                     }
                 });
             }
