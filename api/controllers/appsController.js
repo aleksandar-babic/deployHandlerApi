@@ -62,7 +62,7 @@ exports.addApp = function(req, res) {
 
         if((count(req.body.entryPoint,'\\.') > 1) && ((req.body.isNpm == 'true') && req.body.isNpm))
             return res.status(500).json({
-                message: 'Entry point is not valid. Example: server.js'
+                message: 'NPM command as entry point is not valid. Example: start'
             });
 
         User.findById(decoded.user._id,function (err,user) {
