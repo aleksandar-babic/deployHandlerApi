@@ -66,6 +66,31 @@ exports.register = function(req,res){
                                 message: 'Error while registrating new user.',
                                 error: err
                             });
+
+                        var firstDefaultTodo = new Todo({
+                            message: 'Register on DeployHandler platform',
+                            isComplete: true,
+                            user: result._id
+                        });
+
+                        firstDefaultTodo.save(function (err,res) {
+                            var secondDefaultTodo = new Todo({
+                                message: 'Explore DeployHandler',
+                                isComplete: false,
+                                user: result._id
+                            });
+
+                            secondDefaultTodo.save();
+
+                            var thirdDefaultTodo = new Todo({
+                                message: 'Deploy my first app',
+                                isComplete: false,
+                                user: result._id
+                            });
+
+                            thirdDefaultTodo.save();
+                        });
+
                         res.status(201).json({
                             message: 'User created successfully.',
                             obj: result
