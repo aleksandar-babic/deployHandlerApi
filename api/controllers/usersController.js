@@ -255,7 +255,7 @@ exports.forgotPasswordSendMail = function (req,res) {
 
         //Signing new token ,putting whole user object in it, token is valid for 5 minutes
         var token = jwt.sign({user: user}, 'secret', {expiresIn: 300});
-        var resetUrl = 'http://deployhandler.com:3000/api/users/forgotpwaction?token=' + token;
+        var resetUrl = 'http://deployhandler.com/#/forgotpw?token=' + token;
         //Send Email to user
         client.transmissions.send({
             options: {
