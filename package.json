@@ -2,7 +2,7 @@
   "name": "deployhandler-rest-api",
   "version": "1.0.0",
   "description": "REST Api for DeployHandler.js",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node ./server.js"
@@ -30,6 +30,7 @@
     "portscanner": "*",
     "replace-in-file": "^2.5.0",
     "sleep": "^5.1.1",
+    "sparkpost": "^2.1.2",
     "swagger-ui-express": "^2.0.0"
   }
 }

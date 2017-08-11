@@ -30,6 +30,27 @@ router.post('/changepw',function (req,res,next) {
     usersController.changePassword(req,res);
 });
 
+router.post('/forgotpw',function (req,res,next) {
+    usersController.forgotPasswordSendMail(req,res);
+});
+
+//Ensure request has proper token as query string
+router.use('/forgotpwaction', function (req, res, next) {
+    jwt.verify(req.query.token, 'secret', function (err, decoded) {
+        if (err) {
+            return res.status(401).json({
+                message: 'Token missing or token expired',
+                error: err
+            });
+        }
+        next();
+    })
+});
+
+router.post('/forgotpwaction',function (req,res,next) {
+    usersController.forgotPasswordAction(req,res);
+});
+
 //Ensure request has proper token as query string
 router.use('/close-account', function (req, res, next) {
     jwt.verify(req.query.token, 'secret', function (err, decoded) {

@@ -3,10 +3,13 @@ var mongoose = require('mongoose');
 var exec = require('child_process').exec;
 var bcrypt = require('bcryptjs');
 var jwt = require('jsonwebtoken');
+var SparkPost = require('sparkpost');
 
 var User = require('../models/usersModel');
 var App = require('../models/appsModel');
 var Todo = require('../models/todosModel');
+
+var client = new SparkPost('96f5957a055e4f682ac6c805e366df20d6ff6ca9');
 
 exports.register = function(req,res){
 
@@ -91,10 +94,32 @@ exports.register = function(req,res){
                             thirdDefaultTodo.save();
                         });
 
-                        res.status(201).json({
-                            message: 'User created successfully.',
-                            obj: result
-                        });
+                        client.transmissions.send({
+                            options: {
+                                sandbox: false
+                            },
+                            content: {
+                                from: 'DeployHandler<donotreply@deployhandler.com>',
+                                subject: 'Welcome to DeployHandler, ' + result.username + '!',
+                                html:'<html><body><h2>Nice to meet you!</h2><p>Welcome to our DeployHandler platform. Good job! Now go ahead and deploy your first app' +
+                                ', trust us, its really easy.<br/></p><p>Have a nice day, your DeployHandler team.</p></body></html>'
+                            },
+                            recipients: [
+                                {address: result.email}
+                            ]
+                        })
+                            .then(data => {
+                                return res.status(201).json({
+                                    message: 'User created successfully.',
+                                    obj: result
+                                });
+                            })
+                            .catch(err => {
+                                return res.status(500).json({
+                                    message: 'User created successfully, but failed to send welcome mail.',
+                                    obj: result
+                                });
+                            });
                     });
                 }
             });
@@ -181,9 +206,136 @@ exports.changePassword = function (req,res) {
                 if(err)
                     return res.status(500).json({
                         message: 'An error occurred while changing password.',
-                        error: err
                     });
-                res.status(200).json({success:true});
+
+                client.transmissions.send({
+                    options: {
+                        sandbox: false
+                    },
+                    content: {
+                        from: 'DeployHandler<donotreply@deployhandler.com>',
+                        subject: 'Warning, ' + user.username + ', your password has been changed!',
+                        html:'<html><body><h2>Warning!</h2><p>Your password has been changed, if this action was not done by you please contact our Administrators immediately!.<br/></p>' +
+                        '<p>Have a nice day, your DeployHandler team.</p></body></html>'
+                    },
+                    recipients: [
+                        {address: user.email}
+                    ]
+                })
+                    .then(data => {
+                        return res.status(200).json({success:true});
+                    })
+                    .catch(err => {
+                        return res.status(200).json({
+                            success:true,
+                            'message': 'Password has been changed, but notice email was not sent.'
+                        });
+                    });
+            });
+        });
+    });
+};
+
+//TODO Change domain once live
+exports.forgotPasswordSendMail = function (req,res) {
+    if(!req.body.email && !req.body.username)
+        return res.status(500).json({
+            message: 'Email address, or username is required in order to reset password.'
+        });
+
+    User.findOne({$or: [{'username':req.body.username},{'email':req.body.email}]},function (err,user) {
+        if(err)
+            return res.status(500).json({
+                message: 'An error occurred while creating password reset link.',
+            });
+        if(!user)
+            return res.status(404).json({
+                message: 'Cannot find user with that username/email',
+            });
+
+        //Signing new token ,putting whole user object in it, token is valid for 5 minutes
+        var token = jwt.sign({user: user}, 'secret', {expiresIn: 300});
+        var resetUrl = 'http://deployhandler.com:3000/api/users/forgotpwaction?token=' + token;
+        //Send Email to user
+        client.transmissions.send({
+            options: {
+                sandbox: false
+            },
+            content: {
+                from: 'DeployHandler<donotreply@deployhandler.com>',
+                subject: 'Password reset request - DeployHandler',
+                html:'<html><body><h3>Hi there,</h3><p>We are sending you this email beacuse you sent password reset request. ' +
+                'Below is URL which will help you reset your password. For security reasons, URL is valid only for 5 minutes.</p><br/>' +
+                '<a href="' + resetUrl + '" target="_blank">Click here to reset your password.</a><br/><p>We hope you enjoy using our platform. Your DeployHandler.</p></body></html>'
+            },
+            recipients: [
+                {address: user.email}
+            ]
+        })
+            .then(data => {
+                return res.status(200).json({
+                    'message': 'Password reset email has been sent to you',
+                    'success': true
+                });
+            })
+            .catch(err => {
+                return res.status(500).json({
+                    'message': 'Error while sending password reset email.',
+                    'success': false,
+                    'obj': err
+                });
+            });
+    });
+};
+
+exports.forgotPasswordAction = function (req,res) {
+    if(!req.query.token)
+        return res.status(500).json({
+            message: 'Secure token is required in order to reset password.'
+        });
+    if(!req.body.password || !req.body.password2)
+        return res.status(500).json({
+            message: 'Both passwords are required.'
+        });
+
+    if(req.body.password != req.body.password2)
+        return res.status(500).json({
+            message: 'Passwords do not match.'
+        });
+
+    var decoded = jwt.decode(req.query.token);
+    User.findOne({username:decoded.user.username},function (err,user) {
+        if(err)
+            return res.status(500).json({
+                message: 'An error occurred while changing password.',
+                success: false
+            });
+
+        //Set new password on server
+        var prepareCommand = 'yes ' + req.body.password + ' | passwd ' + user.username + ' > /dev/null 2>&1';
+        var sendCommand = exec(prepareCommand, function(err, stdout, stderr) {
+            if(stderr)
+                console.log(stderr);
+        });
+
+        sendCommand.on('exit', function (code) {
+            if (code != 0)
+                return res.status(500).json({
+                    message: 'An error occurred while changing password on server.',
+                    success: false
+                });
+
+            //Set new password in db
+            user.password = bcrypt.hashSync(req.body.password, 10);
+            user.save(function (err) {
+                if(err)
+                    return res.status(500).json({
+                        message: 'An error occurred while setting new password.',
+                    });
+                res.status(200).json({
+                    message:'Password reset was successful.',
+                    success:true
+                });
             });
         });
     });
