@@ -281,8 +281,7 @@ exports.forgotPasswordSendMail = function (req,res) {
             .catch(err => {
                 return res.status(500).json({
                     'message': 'Error while sending password reset email.',
-                    'success': false,
-                    'obj': err
+                    'success': false
                 });
             });
     });
