@@ -254,8 +254,8 @@ exports.forgotPasswordSendMail = function (req,res) {
             });
 
         //Signing new token ,putting whole user object in it, token is valid for 5 minutes
-        var token = jwt.sign({user: user}, 'secret', {expiresIn: 300});
-        var resetUrl = 'http://deployhandler.com/#/forgotpw?token=' + token;
+        var token = jwt.sign({user: user,resetPw:true}, 'secret', {expiresIn: 300});
+        var resetUrl = 'http://localhost:4200/#/resetpw?token=' + token;
         //Send Email to user
         client.transmissions.send({
             options: {
@@ -303,6 +303,12 @@ exports.forgotPasswordAction = function (req,res) {
         });
 
     var decoded = jwt.decode(req.query.token);
+
+    if(!decoded.resetPw)
+        return res.status(500).json({
+            message: 'Secure token is not valid.'
+        });
+
     User.findOne({username:decoded.user.username},function (err,user) {
         if(err)
             return res.status(500).json({
