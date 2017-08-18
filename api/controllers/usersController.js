@@ -4,6 +4,7 @@ var exec = require('child_process').exec;
 var bcrypt = require('bcryptjs');
 var jwt = require('jsonwebtoken');
 var SparkPost = require('sparkpost');
+var config = require('../../config.json');
 
 var User = require('../models/usersModel');
 var App = require('../models/appsModel');
@@ -150,7 +151,7 @@ exports.login = function(req,res){
                 message: 'Invalid login credentials'
             });
         //Signing new token ,putting whole user object in it
-        var token = jwt.sign({user: user}, 'secret', {expiresIn: 1200});
+        var token = jwt.sign({user: user}, config.security.jwtSecret, {expiresIn: Number(config.security.loginTokenExpire)});
         //Returning JSON with token
         res.status(200).json({
             message: 'Successfully logged in',
@@ -254,7 +255,7 @@ exports.forgotPasswordSendMail = function (req,res) {
             });
 
         //Signing new token ,putting whole user object in it, token is valid for 5 minutes
-        var token = jwt.sign({user: user,resetPw:true}, 'secret', {expiresIn: 300});
+        var token = jwt.sign({user: user,resetPw:true}, config.security.jwtSecret, {expiresIn: Number(config.security.pwResetTokenExpire)});
         var resetUrl = 'http://localhost:4200/#/resetpw?token=' + token;
         //Send Email to user
         client.transmissions.send({

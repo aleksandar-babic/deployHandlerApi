@@ -3,8 +3,7 @@ var express = require('express');
 var router = express.Router();
 var jwt = require('jsonwebtoken');
 var config = require('../../config.json');
-
-var todosController = require('../controllers/todosController');
+var adminController = require('../controllers/adminController');
 
 //Ensure request has proper token as query string
 router.use('/', function (req, res, next) {
@@ -15,28 +14,22 @@ router.use('/', function (req, res, next) {
                 error: err
             });
         }
+        if(!decoded.user.isAdmin){
+            console.log(decoded.user);
+            return res.status(401).json({
+                title: 'You are not Admin',
+                error:{
+                    name: 'JsonWebTokenError',
+                    message: 'jwt provided, but not admin'
+                }
+            });
+        }
         next();
     })
 });
 
 router.get('/', function (req, res, next) {
-    todosController.getTodos(req,res,next);
-});
-
-router.post('/',function (req,res,next) {
-    todosController.addTodo(req,res,next);
-});
-
-router.put('/:todoId',function (req,res,next) {
-    todosController.setDone(req,res,next);
-});
-
-router.delete('/:todoId',function (req,res,next) {
-    todosController.deleteTodo(req,res,next);
-});
-
-router.delete('/',function (req,res,next) {
-    todosController.wipeTodos(req,res,next);
+    adminController.getAllApps(req,res);
 });
 
 

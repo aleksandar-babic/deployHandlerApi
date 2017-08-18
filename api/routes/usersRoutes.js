@@ -2,6 +2,7 @@
 var express = require('express');
 var router = express.Router();
 var jwt = require('jsonwebtoken');
+var config = require('../../config.json');
 
 var usersController = require('../controllers/usersController');
 
@@ -15,7 +16,7 @@ router.post('/login', function(req, res, next) {
 
 //Ensure request has proper token as query string
 router.use('/changepw', function (req, res, next) {
-    jwt.verify(req.query.token, 'secret', function (err, decoded) {
+    jwt.verify(req.query.token, config.security.jwtSecret, function (err, decoded) {
         if (err) {
             return res.status(401).json({
                 title: 'Not Authenticated',
@@ -36,7 +37,7 @@ router.post('/forgotpw',function (req,res,next) {
 
 //Ensure request has proper token as query string
 router.use('/forgotpwaction', function (req, res, next) {
-    jwt.verify(req.query.token, 'secret', function (err, decoded) {
+    jwt.verify(req.query.token, config.security.jwtSecret, function (err, decoded) {
         if (err) {
             return res.status(401).json({
                 message: 'Token missing or token expired',
@@ -53,7 +54,7 @@ router.post('/forgotpwaction',function (req,res,next) {
 
 //Ensure request has proper token as query string
 router.use('/close-account', function (req, res, next) {
-    jwt.verify(req.query.token, 'secret', function (err, decoded) {
+    jwt.verify(req.query.token, config.security.jwtSecret, function (err, decoded) {
         if (err) {
             return res.status(401).json({
                 title: 'Not Authenticated',

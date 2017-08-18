@@ -30,7 +30,12 @@ var UserSchema = new Schema({
     todos:[{
         type: Schema.Types.ObjectId,
         ref: 'Todos'
-    }]
+    }],
+    isAdmin: {
+        type: Boolean,
+        required: false,
+        default: true
+    }
 });
 
 UserSchema.plugin(uniqueValidator);

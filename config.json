@@ -1,0 +1,17 @@
+{
+  "db":{
+    "connectionString":"mongodb://localhost/deployhandlerapi"
+  },
+  "security":{
+    "jwtSecret":"supersecret",
+    "headerAllowOrigin":"*",
+    "loginTokenExpire": "3600",
+    "pwResetTokenExpire": "300"
+  },
+  "network":{
+    "port": "3000"
+  },
+  "docs":{
+    "docsPathJson":"./docs.json"
+  }
+}
