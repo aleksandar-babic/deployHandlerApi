@@ -28,8 +28,12 @@ router.use('/', function (req, res, next) {
     })
 });
 
-router.get('/', function (req, res, next) {
-    adminController.getAllApps(req,res);
+router.get('/apps', function (req, res, next) {
+    adminController.getAppsList(req,res);
+});
+
+router.get('/users',function (req,res,next) {
+   adminController.getUsers(req,res);
 });
 
 
