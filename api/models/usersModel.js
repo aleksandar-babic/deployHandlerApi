@@ -34,7 +34,7 @@ var UserSchema = new Schema({
     isAdmin: {
         type: Boolean,
         required: false,
-        default: true
+        default: false
     }
 });
 

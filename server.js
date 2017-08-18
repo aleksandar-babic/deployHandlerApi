@@ -41,7 +41,7 @@ var port = config.network.port;
 app.listen(port);
 
 
-console.log('DeployHandler API server up on : ' + port);
+console.log('DeployHandler API server up on port: ' + port);
 
 app.use(function(req, res) {
   res.status(404).send({url: req.originalUrl + ' not found'})
