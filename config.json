@@ -1,4 +1,9 @@
 {
+  "general":{
+    "workingDir":"/root/api/",
+    "domainFrontend":"localhost:4200",
+    "protocolFrontend":"http"
+  },
   "db":{
     "connectionString":"mongodb://localhost/deployhandlerapi"
   },

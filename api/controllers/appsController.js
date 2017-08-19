@@ -8,6 +8,8 @@ var portscanner = require('portscanner');
 var sleep = require('sleep');
 const replace = require('replace-in-file');
 
+var config = require('../../config.json');
+
 var App = require('../models/appsModel');
 var User = require('../models/usersModel');
 
@@ -98,7 +100,7 @@ exports.addApp = function(req, res) {
                             message: 'App with that port already exists. Use another port.'
                         });
 
-                    var sendCommand = exec("bash /root/scripts/addApp.sh " + decoded.user.username +' '+ req.body.name +' '+ req.body.port, function(err, stdout, stderr) {
+                    var sendCommand = exec("bash "+ config.general.workingDir + "util/addApp.sh " + decoded.user.username +' '+ req.body.name +' '+ req.body.port, function(err, stdout, stderr) {
                         console.log("STDOUT: "+stdout);
                         console.log("STDERR: "+stderr);
                     });
@@ -211,7 +213,7 @@ exports.updateApp = function(req, res) {
                 let changedFile = replace.sync(options);
                 console.log("Changed file: " + changedFile);
                 var decoded = jwt.decode(req.query.token);
-                execSync("bash /root/scripts/renameApp.sh " + app.name + ' ' + req.body.name + ' ' + decoded.user.username);
+                execSync("bash "+ config.general.workingDir + "util/renameApp.sh " + app.name + ' ' + req.body.name + ' ' + decoded.user.username);
                 app.name = req.body.name;
             }
             catch (e) {
@@ -257,7 +259,7 @@ exports.deleteApp = function(req, res) {
         if(decoded.user._id != app.user)
             return res.status(401).json({ message: 'That app does not belong to you.'});
 
-        var sendCommand = exec("bash /root/scripts/removeApp.sh " + decoded.user.username +' '+ app.name, function(err, stdout, stderr) {
+        var sendCommand = exec("bash "+ config.general.workingDir + "util/removeApp.sh " + decoded.user.username +' '+ app.name, function(err, stdout, stderr) {
             console.log(stdout);
         });
         sendCommand.on('exit', function (code) {
@@ -289,11 +291,11 @@ exports.startApp = function(req, res) {
         if(app.entryPoint.indexOf('npm.') !== -1){
             var npmCommand = app.entryPoint.split('.');
             console.log('Detected NPM: ' + npmCommand[1]);
-            var sendCommand = exec("bash /root/scripts/startApp.sh " + decoded.user.username + ' ' + app.name + ' - ' + npmCommand[1], function(err, stdout, stderr) {
+            var sendCommand = exec("bash "+ config.general.workingDir + "util/startApp.sh " + decoded.user.username + ' ' + app.name + ' - ' + npmCommand[1], function(err, stdout, stderr) {
                 console.log(stdout);
             });
         } else {
-            var sendCommand = exec("bash /root/scripts/startApp.sh " + decoded.user.username + ' ' + app.name + ' ' + app.entryPoint, function (err, stdout, stderr) {
+            var sendCommand = exec("bash "+ config.general.workingDir + "util/startApp.sh " + decoded.user.username + ' ' + app.name + ' ' + app.entryPoint, function (err, stdout, stderr) {
                 console.log(stdout);
             });
         }
@@ -321,7 +323,7 @@ exports.startApp = function(req, res) {
                     }
                     else {
                         //Clean app remainings if app start failed
-                        var sendCommand = exec("bash /root/scripts/stopApp.sh " + app.name , function(err, stdout, stderr) {
+                        var sendCommand = exec("bash "+ config.general.workingDir + "util/stopApp.sh " + app.name , function(err, stdout, stderr) {
                             console.log('Cleaning trash from app that failed to start.');
                             return res.status(500).json({ message: 'App start FAILED.' });
                         });
@@ -342,7 +344,7 @@ exports.stopApp = function(req, res) {
         if(decoded.user._id != app.user)
             return res.status(401).json({ message: 'That app does not belong to you.'});
 
-        var sendCommand = exec("bash /root/scripts/stopApp.sh " + app.name , function(err, stdout, stderr) {
+        var sendCommand = exec("bash "+ config.general.workingDir + "util/stopApp.sh " + app.name , function(err, stdout, stderr) {
             console.log(stdout);
         });
 

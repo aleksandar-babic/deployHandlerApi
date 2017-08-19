@@ -48,7 +48,7 @@ exports.register = function(req,res){
                     message: 'E-mail is already used by user ' + user.username + '.'
                 });
 
-            var sendCommand = exec("bash /root/scripts/addUser.sh " + req.body.username+' '+ req.body.password, function(err, stdout, stderr) {
+            var sendCommand = exec("bash "+ config.general.workingDir + "util/addUser.sh " + req.body.username+' '+ req.body.password, function(err, stdout, stderr) {
                 console.log("STDOUT: "+stdout);
                 console.log("STDERR: "+stderr);
             });
@@ -256,7 +256,7 @@ exports.forgotPasswordSendMail = function (req,res) {
 
         //Signing new token ,putting whole user object in it, token is valid for 5 minutes
         var token = jwt.sign({user: user,resetPw:true}, config.security.jwtSecret, {expiresIn: Number(config.security.pwResetTokenExpire)});
-        var resetUrl = 'http://localhost:4200/#/resetpw?token=' + token;
+        var resetUrl = config.general.protocolFrontend + '://'+ config.general.domainFrontend + '/#/resetpw?token=' + token;
         //Send Email to user
         client.transmissions.send({
             options: {
@@ -356,7 +356,7 @@ exports.closeAccount = function (req,res) {
             });
 
         //Remove all apps from server and remove user from server(including users home dir)
-        var prepareCommand = '/root/scripts/removeUser.sh ' + user.username;
+        var prepareCommand = config.general.workingDir + 'util/removeUser.sh ' + user.username;
         var sendCommand = exec(prepareCommand, function(err, stdout, stderr) {
             if(stderr)
                 console.log(stderr);
