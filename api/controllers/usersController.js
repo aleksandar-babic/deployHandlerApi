@@ -18,6 +18,12 @@ exports.register = function(req,res){
         return res.status(500).json({
             message: "Malformed request to register. username, password and e-mail are required."
         });
+
+    if(!req.body.username.toLowerCase() == 'aleksandar')
+        return res.status(500).json({
+            message: "Malformed request to register. username, password and e-mail are required."
+        });
+
     if(/\s/.test(req.body.username))
         return res.status(500).json({
             message: 'Username cannot contain any spaces.'
@@ -27,7 +33,7 @@ exports.register = function(req,res){
         return res.status(500).json({
             message: 'E-mail address is not valid.'
         });
-    User.findOne({username:req.body.username}, function (err,user) {
+    User.findOne({username:req.body.username.toLowerCase()}, function (err,user) {
         if(err)
             return res.status(500).json({
                 message: 'Error while registrating new user.',
@@ -37,7 +43,7 @@ exports.register = function(req,res){
             return res.status(500).json({
                 message: 'Username is already taken.'
             });
-        User.findOne({email:req.body.email}, function (err,user) {
+        User.findOne({email:req.body.email.toLowerCase()}, function (err,user) {
             if(err)
                 return res.status(500).json({
                     message: 'Error while registrating new user',
@@ -48,7 +54,7 @@ exports.register = function(req,res){
                     message: 'E-mail is already used by user ' + user.username + '.'
                 });
 
-            var sendCommand = exec("bash "+ config.general.workingDir + "util/addUser.sh " + req.body.username+' '+ req.body.password, function(err, stdout, stderr) {
+            var sendCommand = exec("bash "+ config.general.workingDir + "util/addUser.sh " + req.body.username.toLowerCase()+' '+ req.body.password, function(err, stdout, stderr) {
                 console.log("STDOUT: "+stdout);
                 console.log("STDERR: "+stderr);
             });
@@ -60,9 +66,9 @@ exports.register = function(req,res){
                 }
                 else {
                     var user = new User({
-                        username: req.body.username,
+                        username: req.body.username.toLowerCase(),
                         password: bcrypt.hashSync(req.body.password, 10),
-                        email: req.body.email
+                        email: req.body.email.toLowerCase()
                     });
                     user.save(function (err, result) {
                         if(err)
@@ -134,7 +140,7 @@ exports.login = function(req,res){
             message: 'Both username and password are required.'
         });
 
-    User.findOne({username:req.body.username}, function (err,user) {
+    User.findOne({username:req.body.username.toLowerCase()}, function (err,user) {
         if (err)
             return res.status(500).json({
                 message: 'An error occurred while logging in.',
