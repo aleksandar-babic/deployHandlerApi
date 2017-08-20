@@ -46,7 +46,19 @@ exports.addApp = function(req, res) {
             return res.status(500).json({
                 message: 'App name can contain only characters,numbers and dash.'
             });
-        if(req.body.name.toLowerCase() == 'api')
+        if(req.body.name.toLowerCase() == 'api' )
+            return res.status(500).json({
+                message: 'api subdomain name is reserved for internal use.'
+            });
+        if(req.body.name.toLowerCase() == 'sftp' )
+            return res.status(500).json({
+                message: 'sftp subdomain name is reserved for internal use.'
+            });
+        if(req.body.name.toLowerCase() == 'www' )
+            return res.status(500).json({
+                message: 'www subdomain name is reserved for internal use.'
+            });
+        if(req.body.name.toLowerCase() == 'mail' )
             return res.status(500).json({
                 message: 'api subdomain name is reserved for internal use.'
             });
@@ -54,7 +66,14 @@ exports.addApp = function(req, res) {
             return res.status(500).json({
                 message: 'Apps can only use port range of 1024-49150.'
             });
-
+        if(req.body.port && (req.body.port == '80' || req.body.port == '443'))
+            return res.status(500).json({
+                message: 'Ports 80 and 443 are reserved for internal use.'
+            });
+        if(req.body.port && (req.body.port == '8080' || req.body.port == '8443'))
+            return res.status(500).json({
+                message: 'Ports 8080 and 8443 are reserved for internal use.'
+            });
 
         if((count(req.body.entryPoint,'\\.') > 1 || new RegExp('\\s').test(req.body.entryPoint)) &&
             (!(req.body.isNpm == 'true') || !req.body.isNpm))
@@ -195,9 +214,25 @@ exports.updateApp = function(req, res) {
             return res.status(500).json({
                 message: 'api subdomain name is reserved for internal use.'
             });
+        if(req.body.name.toLowerCase() == 'sftp' )
+            return res.status(500).json({
+                message: 'sftp subdomain name is reserved for internal use.'
+            });
+        if(req.body.name.toLowerCase() == 'www' )
+            return res.status(500).json({
+                message: 'www subdomain name is reserved for internal use.'
+            });
+        if(req.body.name.toLowerCase() == 'mail' )
+            return res.status(500).json({
+                message: 'api subdomain name is reserved for internal use.'
+            });
         if(req.body.port && (req.body.port == '80' || req.body.port == '443'))
             return res.status(500).json({
                 message: 'Ports 80 and 443 are reserved for internal use.'
+            });
+        if(req.body.port && (req.body.port == '8080' || req.body.port == '8443'))
+            return res.status(500).json({
+                message: 'Ports 8080 and 8443 are reserved for internal use.'
             });
         if(req.body.entryPoint && (count(req.body.entryPoint,'\\.') > 1))
             return res.status(500).json({
