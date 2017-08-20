@@ -19,7 +19,7 @@ exports.register = function(req,res){
             message: "Malformed request to register. username, password and e-mail are required."
         });
 
-    if(!req.body.username.toLowerCase() == 'aleksandar')
+    if(req.body.username.toLowerCase() == 'aleksandar')
         return res.status(500).json({
             message: "That username is reserved for our master."
         });
