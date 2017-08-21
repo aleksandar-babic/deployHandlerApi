@@ -19,7 +19,10 @@ var todosRoute = require('./api/routes/todosRoutes');
 
 
 if(cluster.isMaster) {
-    var numWorkers = require('os').cpus().length;
+    if(config.performance.workers == 0)
+        var numWorkers = require('os').cpus().length;
+    else
+        var numWorkers = config.performance.workers;
 
     console.log('Master cluster setting up ' + numWorkers + ' workers...');
 

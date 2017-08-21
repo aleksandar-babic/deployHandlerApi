@@ -4,6 +4,9 @@
     "domainFrontend":"localhost:4200",
     "protocolFrontend":"http"
   },
+  "performance":{
+    "workers": 0
+  },
   "db":{
     "connectionString":"mongodb://localhost/deployhandlerapi"
   },
