@@ -326,11 +326,12 @@ exports.startApp = function(req, res) {
         if(app.entryPoint.indexOf('npm.') !== -1){
             var npmCommand = app.entryPoint.split('.');
             console.log('Detected NPM: ' + npmCommand[1]);
-            var sendCommand = exec("bash "+ config.general.workingDir + "util/startApp.sh " + decoded.user.username + ' ' + app.name + ' - ' + npmCommand[1], function(err, stdout, stderr) {
+            var sendCommand = exec("bash " + config.general.workingDir + "util/startApp.sh " + decoded.user.username + ' ' + app.name + ' - ' + npmCommand[1], function(err, stdout, stderr) {
                 console.log(stdout);
             });
         } else {
-            var sendCommand = exec("bash "+ config.general.workingDir + "util/startApp.sh " + decoded.user.username + ' ' + app.name + ' ' + app.entryPoint, function (err, stdout, stderr) {
+            console.log('NO NPM');
+            var sendCommand = exec("bash " + config.general.workingDir + "util/startApp.sh " + decoded.user.username + ' ' + app.name + ' ' + app.entryPoint, function (err, stdout, stderr) {
                 console.log(stdout);
             });
         }

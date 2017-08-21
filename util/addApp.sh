@@ -67,11 +67,11 @@ fi
 
 
 #Cloudflare API add DNS domain
-curl -X POST "https://api.cloudflare.com/client/v4/zones/fb274a4b69737668ac3988c432d8dd5a/dns_records" \
-     -H "X-Auth-Email: alfainzenjering@gmail.com" \
-     -H "X-Auth-Key: 21a865ad174ebfa670709f13360c09da74197" \
+curl -X POST "https://api.cloudflare.com/client/v4/zones/YOURZONE/dns_records" \
+     -H "X-Auth-Email: YOURMAIL" \
+     -H "X-Auth-Key: YOURAPIKEY" \
      -H "Content-Type: application/json" \
-     --data '{"type":"A","name":"'$url'","content":"127.0.0.1","ttl":120,"proxied":false}'
+     --data '{"type":"A","name":"'$url'","content":"YOURSERVERIP","ttl":120,"proxied":false}'
 if [ "$?" -eq "0" ]
 then
 	exit $?
