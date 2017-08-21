@@ -1,4 +1,6 @@
 var express = require('express');
+var https = require('https');
+var fs = require('fs');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
@@ -37,11 +39,21 @@ app.use('/api/stats', statsRoute);
 app.use('/api/todos', todosRoute);
 app.use('/', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
+
+var secureServer = https.createServer({
+    key: fs.readFileSync(config.network.sslKey),
+    cert: fs.readFileSync(config.network.sslCert)
+}, app)
+    .listen(config.network.securePort, function () {
+        console.log('Secure DeployHandler API listening on port ' + config.network.securePort);
+    });
+
+
 var port = config.network.port;
-app.listen(port);
+app.listen(port,function () {
+    console.log('Unsecure DeployHandler API listening on port ' + config.network.port)
+});
 
-
-console.log('DeployHandler API server up on port: ' + port);
 
 app.use(function(req, res) {
   res.status(404).send({url: req.originalUrl + ' not found'})
