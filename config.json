@@ -1,8 +1,8 @@
 {
   "general":{
-    "workingDir":"/root/deployhandlerapi/",
-    "domainFrontend":"localhost:4200",
-    "protocolFrontend":"http"
+    "workingDir":"/root/deployhandler/deployhandlerapi/",
+    "domainFrontend":"app.deployhandler.com",
+    "protocolFrontend":"https"
   },
   "performance":{
     "workers": 0
@@ -19,8 +19,8 @@
   "network":{
     "port": "8080",
     "securePort":"8443",
-    "sslKey":"/etc/letsencrypt/live/api.deployhandler.com/privkey.pem",
-    "sslCert":"/etc/letsencrypt/live/api.deployhandler.com/cert.pem"
+    "sslKey":"/path/to/ssl/certificate.pem",
+    "sslCert":"/path/to/ssl/privatekey.pem"
   },
   "docs":{
     "docsPathJson":"./docs.json"
