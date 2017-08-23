@@ -46,21 +46,11 @@ exports.addApp = function(req, res) {
             return res.status(500).json({
                 message: 'App name can contain only characters,numbers and dash.'
             });
-        if(req.body.name.toLowerCase() == 'api' )
+        if(req.body.name.toLowerCase() == 'api'  || req.body.name.toLowerCase() == 'sftp'
+            || req.body.name.toLowerCase() == 'www' || req.body.name.toLowerCase() == 'mail'
+            || req.body.name.toLowerCase() == 'ftp' || req.body.name.toLowerCase() == 'app')
             return res.status(500).json({
-                message: 'api subdomain name is reserved for internal use.'
-            });
-        if(req.body.name.toLowerCase() == 'sftp' )
-            return res.status(500).json({
-                message: 'sftp subdomain name is reserved for internal use.'
-            });
-        if(req.body.name.toLowerCase() == 'www' )
-            return res.status(500).json({
-                message: 'www subdomain name is reserved for internal use.'
-            });
-        if(req.body.name.toLowerCase() == 'mail' )
-            return res.status(500).json({
-                message: 'api subdomain name is reserved for internal use.'
+                message: req.body.name.toLowerCase() + ' subdomain name is reserved for internal use.'
             });
         if(parseInt(req.body.port) < 1024 || parseInt(req.body.port) > 49150)
             return res.status(500).json({
@@ -210,21 +200,11 @@ exports.updateApp = function(req, res) {
                 message: 'App name cannot contain space.'
             });
 
-        if(req.body.name && req.body.name.toLowerCase() == 'api')
+        if(req.body.name && ( req.body.name.toLowerCase() == 'api'  || req.body.name.toLowerCase() == 'sftp'
+            || req.body.name.toLowerCase() == 'www' || req.body.name.toLowerCase() == 'mail'
+            || req.body.name.toLowerCase() == 'ftp' || req.body.name.toLowerCase() == 'app' ))
             return res.status(500).json({
-                message: 'api subdomain name is reserved for internal use.'
-            });
-        if(req.body.name.toLowerCase() == 'sftp' )
-            return res.status(500).json({
-                message: 'sftp subdomain name is reserved for internal use.'
-            });
-        if(req.body.name.toLowerCase() == 'www' )
-            return res.status(500).json({
-                message: 'www subdomain name is reserved for internal use.'
-            });
-        if(req.body.name.toLowerCase() == 'mail' )
-            return res.status(500).json({
-                message: 'api subdomain name is reserved for internal use.'
+                message: req.body.name.toLowerCase() + ' subdomain name is reserved for internal use.'
             });
         if(req.body.port && (req.body.port == '80' || req.body.port == '443'))
             return res.status(500).json({
