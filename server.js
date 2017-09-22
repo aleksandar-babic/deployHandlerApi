@@ -17,12 +17,13 @@ const usersRoute = require('./api/routes/usersRoutes');
 const statsRoute = require('./api/routes/statsRoutes');
 const todosRoute = require('./api/routes/todosRoutes');
 
-
+let app;
 if(cluster.isMaster) {
+    let numWorkers
     if(config.performance.workers == 0)
-        var numWorkers = require('os').cpus().length;
+        numWorkers = require('os').cpus().length;
     else
-        var numWorkers = config.performance.workers;
+        numWorkers = config.performance.workers;
 
     console.log(`Master cluster setting up ${numWorkers} workers...`);
 
@@ -42,7 +43,7 @@ if(cluster.isMaster) {
 
 }else {
 
-    var app = express();
+    app = express();
     mongoose.Promise = global.Promise;
     mongoose.connect(config.db.connectionString);
 
