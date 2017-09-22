@@ -1,22 +1,22 @@
 'use strict';
-var express = require('express');
-var router = express.Router();
-var jwt = require('jsonwebtoken');
-var config = require('../../config.json');
+const express = require('express');
+const router = express.Router();
+const jwt = require('jsonwebtoken');
+const config = require('../../config.json');
 
-var usersController = require('../controllers/usersController');
+const usersController = require('../controllers/usersController');
 
-router.post('/', function (req, res, next) {
+router.post('/', (req, res, next) => {
     usersController.register(req,res);
 });
 
-router.post('/login', function(req, res, next) {
+router.post('/login', (req, res, next) => {
     usersController.login(req,res);
 });
 
 //Ensure request has proper token as query string
-router.use('/changepw', function (req, res, next) {
-    jwt.verify(req.query.token, config.security.jwtSecret, function (err, decoded) {
+router.use('/changepw', (req, res, next) => {
+    jwt.verify(req.query.token, config.security.jwtSecret, (err, decoded) => {
         if (err) {
             return res.status(401).json({
                 title: 'Not Authenticated',
@@ -27,17 +27,17 @@ router.use('/changepw', function (req, res, next) {
     })
 });
 
-router.post('/changepw',function (req,res,next) {
+router.post('/changepw',(req, res, next) => {
     usersController.changePassword(req,res);
 });
 
-router.post('/forgotpw',function (req,res,next) {
+router.post('/forgotpw',(req, res, next) => {
     usersController.forgotPasswordSendMail(req,res);
 });
 
 //Ensure request has proper token as query string
-router.use('/forgotpwaction', function (req, res, next) {
-    jwt.verify(req.query.token, config.security.jwtSecret, function (err, decoded) {
+router.use('/forgotpwaction', (req, res, next) => {
+    jwt.verify(req.query.token, config.security.jwtSecret, (err, decoded) => {
         if (err) {
             return res.status(401).json({
                 message: 'Token missing or token expired',
@@ -48,13 +48,13 @@ router.use('/forgotpwaction', function (req, res, next) {
     })
 });
 
-router.post('/forgotpwaction',function (req,res,next) {
+router.post('/forgotpwaction',(req, res, next) => {
     usersController.forgotPasswordAction(req,res);
 });
 
 //Ensure request has proper token as query string
-router.use('/close-account', function (req, res, next) {
-    jwt.verify(req.query.token, config.security.jwtSecret, function (err, decoded) {
+router.use('/close-account', (req, res, next) => {
+    jwt.verify(req.query.token, config.security.jwtSecret, (err, decoded) => {
         if (err) {
             return res.status(401).json({
                 title: 'Not Authenticated',
@@ -65,7 +65,7 @@ router.use('/close-account', function (req, res, next) {
     })
 });
 
-router.delete('/close-account',function (req,res) {
+router.delete('/close-account',(req, res) => {
     usersController.closeAccount(req,res);
 });
 

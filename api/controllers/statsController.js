@@ -1,13 +1,13 @@
 'use strict';
-var mongoose = require('mongoose');
-var jwt = require('jsonwebtoken');
-var os = require('os-utils');
+const mongoose = require('mongoose');
+const jwt = require('jsonwebtoken');
+const os = require('os-utils');
 
-var App = require('../models/appsModel');
+const App = require('../models/appsModel');
 
-exports.getStats = function(req, res) {
-    var decoded = jwt.decode(req.query.token);
-    var stats = {
+exports.getStats = (req, res) => {
+    const decoded = jwt.decode(req.query.token);
+    const stats = {
         cpu:{
             load:0,
             usage:0,
@@ -22,15 +22,15 @@ exports.getStats = function(req, res) {
             running:0
         }
     };
-    App.find({'user': decoded.user._id}, function(err, apps) {
+    App.find({'user': decoded.user._id}, (err, apps) => {
         if (err)
             return res.status(500).send(err);
-        apps.forEach(function (app) {
+        apps.forEach(app => {
             stats.apps.total ++;
             if(app.status == 'started')
                 stats.apps.running++;
         });
-        os.cpuUsage(function(v){
+        os.cpuUsage(v => {
             stats.cpu.load=parseFloat(v).toFixed(2);
             stats.cpu.usage=parseFloat(v).toFixed(2) * 100.0;
             stats.ram.usage = parseFloat(1-os.freememPercentage()).toFixed(2) * 100.0;

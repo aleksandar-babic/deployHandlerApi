@@ -1,10 +1,10 @@
 'use strict';
-var mongoose = require('mongoose');
-var Schema = mongoose.Schema;
+const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
 
-var User = require('./usersModel');
+const User = require('./usersModel');
 
-var TodoSchema = new Schema({
+const TodoSchema = new Schema({
     message: {
         type: String,
         required: true,
@@ -19,8 +19,8 @@ var TodoSchema = new Schema({
     }
 });
 
-TodoSchema.post('remove', function (todo) {
-    User.findById(todo.user, function (err, user) {
+TodoSchema.post('remove', todo => {
+    User.findById(todo.user, (err, user) => {
         user.todos.pull(todo._id);
         user.save();
     });

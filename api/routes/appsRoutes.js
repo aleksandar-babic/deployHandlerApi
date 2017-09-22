@@ -1,14 +1,14 @@
 'use strict';
-var express = require('express');
-var router = express.Router();
-var jwt = require('jsonwebtoken');
-var config = require('../../config.json');
+const express = require('express');
+const router = express.Router();
+const jwt = require('jsonwebtoken');
+const config = require('../../config.json');
 
-var appController = require('../controllers/appsController');
+const appController = require('../controllers/appsController');
 
 //Ensure request has proper token as query string
-router.use('/', function (req, res, next) {
-    jwt.verify(req.query.token, config.security.jwtSecret, function (err, decoded) {
+router.use('/', (req, res, next) => {
+    jwt.verify(req.query.token, config.security.jwtSecret, (err, decoded) => {
         if (err) {
             return res.status(401).json({
                 title: 'Not Authenticated',
@@ -19,35 +19,35 @@ router.use('/', function (req, res, next) {
     })
 });
 
-router.get('/', function (req, res, next) {
+router.get('/', (req, res, next) => {
     appController.getAppList(req,res);
 });
 
-router.post('/', function (req, res, next) {
+router.post('/', (req, res, next) => {
     appController.addApp(req,res);
 });
 
-router.get('/:appId',function (req,res,next) {
+router.get('/:appId',(req, res, next) => {
    appController.viewApp(req,res);
 });
 
-router.put('/:appId',function (req,res,next) {
+router.put('/:appId',(req, res, next) => {
     appController.updateApp(req,res);
 });
 
-router.delete('/:appId',function (req,res,next) {
+router.delete('/:appId',(req, res, next) => {
     appController.deleteApp(req,res);
 });
 
-router.post('/:appId/start', function (req, res, next) {
+router.post('/:appId/start', (req, res, next) => {
     appController.startApp(req,res);
 });
 
-router.post('/:appId/stop', function (req, res, next) {
+router.post('/:appId/stop', (req, res, next) => {
     appController.stopApp(req,res);
 });
 
-router.post('/:appId/install', function (req, res, next) {
+router.post('/:appId/install', (req, res, next) => {
     appController.npmInstall(req,res);
 });
 

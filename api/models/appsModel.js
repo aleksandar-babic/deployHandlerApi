@@ -1,11 +1,11 @@
 'use strict';
-var mongoose = require('mongoose');
-var uniqueValidator = require('mongoose-unique-validator');
-var Schema = mongoose.Schema;
+const mongoose = require('mongoose');
+const uniqueValidator = require('mongoose-unique-validator');
+const Schema = mongoose.Schema;
 
-var User = require('./usersModel')
+const User = require('./usersModel');
 
-var AppSchema = new Schema({
+const AppSchema = new Schema({
     name: {
         type: String,
         required: true,
@@ -40,8 +40,8 @@ var AppSchema = new Schema({
     }
 });
 
-AppSchema.post('remove', function (app) {
-    User.findById(app.user, function (err, user) {
+AppSchema.post('remove', app => {
+    User.findById(app.user, (err, user) => {
         user.apps.pull(app._id);
         user.save();
     });

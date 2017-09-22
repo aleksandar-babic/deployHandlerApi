@@ -1,12 +1,12 @@
 'use strict';
-var mongoose = require('mongoose');
-var jwt = require('jsonwebtoken');
+const mongoose = require('mongoose');
+const jwt = require('jsonwebtoken');
 
-var App = require('../models/appsModel');
-var User = require('../models/usersModel');
+const App = require('../models/appsModel');
+const User = require('../models/usersModel');
 
-exports.getAppsList = function(req, res) {
-    App.find().populate('user').exec(function (err,apps) {
+exports.getAppsList = (req, res) => {
+    App.find().populate('user').exec((err, apps) => {
         if (err)
             return res.status(500).json({
                 message: 'Error while fetching all apps.',
@@ -16,15 +16,17 @@ exports.getAppsList = function(req, res) {
     });
 };
 
-exports.getUsers = function (req,res) {
+exports.getUsers = (req, res) => {
     if(req.query.onlyAdmins && req.query.onlyAdmins === 'true'){
-        User.find({'isAdmin':true},function (err,users) {
-           if(err)
-               return res.status(500).json({
-                   message: 'Error while fetching admins.',
-                   obj: err
-               });
-            var i,total=users.length,filteredResult = [];
+        User.find({'isAdmin':true},(err, users) => {
+            if(err)
+                return res.status(500).json({
+                    message: 'Error while fetching admins.',
+                    obj: err
+                });
+            let i;
+            const total=users.length;
+            const filteredResult = [];
             for(i = 0;i<total;++i){
                 filteredResult[i] = {
                     username:users[i].username,
@@ -37,13 +39,15 @@ exports.getUsers = function (req,res) {
             return res.status(200).json(filteredResult);
         });
     }else if((req.query.onlyAdmins && req.query.onlyAdmins === 'false') || !req.query.onlyAdmins){
-        User.find({},function (err,users) {
+        User.find({},(err, users) => {
             if (err)
                 return res.status(500).json({
                     message: 'Error while fetching all users.',
                     obj: err
                 });
-            var i,total=users.length,filteredResult = [];
+            let i;
+            const total=users.length;
+            const filteredResult = [];
             for(i = 0;i<total;++i){
                 filteredResult[i] = {
                     username:users[i].username,

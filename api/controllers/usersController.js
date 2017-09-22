@@ -1,18 +1,18 @@
 'use strict';
-var mongoose = require('mongoose');
-var exec = require('child_process').exec;
-var bcrypt = require('bcryptjs');
-var jwt = require('jsonwebtoken');
-var SparkPost = require('sparkpost');
-var config = require('../../config.json');
+const mongoose = require('mongoose');
+const exec = require('child_process').exec;
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const SparkPost = require('sparkpost');
+const config = require('../../config.json');
 
-var User = require('../models/usersModel');
-var App = require('../models/appsModel');
-var Todo = require('../models/todosModel');
+const User = require('../models/usersModel');
+const App = require('../models/appsModel');
+const Todo = require('../models/todosModel');
 
-var client = new SparkPost('96f5957a055e4f682ac6c805e366df20d6ff6ca9');
+const client = new SparkPost('96f5957a055e4f682ac6c805e366df20d6ff6ca9');
 
-exports.register = function(req,res){
+exports.register = (req, res) => {
 
     if(!req.body.username || !req.body.email || !req.body.password)
         return res.status(500).json({
@@ -28,12 +28,12 @@ exports.register = function(req,res){
         return res.status(500).json({
             message: 'Username cannot contain any spaces.'
         });
-    var emailRegex = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    const emailRegex = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
     if(!emailRegex.test(req.body.email))
         return res.status(500).json({
             message: 'E-mail address is not valid.'
         });
-    User.findOne({username:req.body.username.toLowerCase()}, function (err,user) {
+    User.findOne({username:req.body.username.toLowerCase()}, (err, user) => {
         if(err)
             return res.status(500).json({
                 message: 'Error while registrating new user.',
@@ -43,7 +43,7 @@ exports.register = function(req,res){
             return res.status(500).json({
                 message: 'Username is already taken.'
             });
-        User.findOne({email:req.body.email.toLowerCase()}, function (err,user) {
+        User.findOne({email:req.body.email.toLowerCase()}, (err, user) => {
             if(err)
                 return res.status(500).json({
                     message: 'Error while registrating new user',
@@ -51,40 +51,40 @@ exports.register = function(req,res){
                 });
             if(user)
                 return res.status(500).json({
-                    message: 'E-mail is already used by user ' + user.username + '.'
+                    message: `E-mail is already used by user ${user.username}.`
                 });
 
-            var sendCommand = exec("bash "+ config.general.workingDir + "util/addUser.sh " + req.body.username.toLowerCase()+' '+ req.body.password, function(err, stdout, stderr) {
-                console.log("STDOUT: "+stdout);
-                console.log("STDERR: "+stderr);
+            const sendCommand = exec(`bash ${config.general.workingDir}util/addUser.sh ${req.body.username.toLowerCase()} ${req.body.password}`, (err, stdout, stderr) => {
+                console.log(`STDOUT: ${stdout}`);
+                console.log(`STDERR: ${stderr}`);
             });
-            sendCommand.on('exit', function (code) {
+            sendCommand.on('exit', code => {
                 if (code != 0) {
                     return res.status(500).json({
                         message: 'An error occurred while registrating user on server.'
                     });
                 }
                 else {
-                    var user = new User({
+                    const user = new User({
                         username: req.body.username.toLowerCase(),
                         password: bcrypt.hashSync(req.body.password, 10),
                         email: req.body.email.toLowerCase()
                     });
-                    user.save(function (err, result) {
+                    user.save((err, result) => {
                         if(err)
                             return res.status(500).json({
                                 message: 'Error while registrating new user.',
                                 error: err
                             });
 
-                        var firstDefaultTodo = new Todo({
+                        const firstDefaultTodo = new Todo({
                             message: 'Register on DeployHandler platform',
                             isComplete: true,
                             user: result._id
                         });
 
-                        firstDefaultTodo.save(function (err,res) {
-                            var secondDefaultTodo = new Todo({
+                        firstDefaultTodo.save((err, res) => {
+                            const secondDefaultTodo = new Todo({
                                 message: 'Explore DeployHandler',
                                 isComplete: false,
                                 user: result._id
@@ -92,7 +92,7 @@ exports.register = function(req,res){
 
                             secondDefaultTodo.save();
 
-                            var thirdDefaultTodo = new Todo({
+                            const thirdDefaultTodo = new Todo({
                                 message: 'Deploy my first app',
                                 isComplete: false,
                                 user: result._id
@@ -107,7 +107,7 @@ exports.register = function(req,res){
                             },
                             content: {
                                 from: 'DeployHandler<donotreply@deployhandler.com>',
-                                subject: 'Welcome to DeployHandler, ' + result.username + '!',
+                                subject: `Welcome to DeployHandler, ${result.username}!`,
                                 html:'<html><body><h2>Nice to meet you!</h2><p>Welcome to our DeployHandler platform. Good job! Now go ahead and deploy your first app' +
                                 ', trust us, its really easy.<br/></p><p>Have a nice day, your DeployHandler team.</p></body></html>'
                             },
@@ -134,13 +134,13 @@ exports.register = function(req,res){
     });
 };
 
-exports.login = function(req,res){
+exports.login = (req, res) => {
     if(!req.body.username || !req.body.password)
         return res.status(500).json({
             message: 'Both username and password are required.'
         });
 
-    User.findOne({username:req.body.username.toLowerCase()}, function (err,user) {
+    User.findOne({username:req.body.username.toLowerCase()}, (err, user) => {
         if (err)
             return res.status(500).json({
                 message: 'An error occurred while logging in.',
@@ -157,7 +157,7 @@ exports.login = function(req,res){
                 message: 'Invalid login credentials'
             });
         //Signing new token ,putting whole user object in it
-        var token = jwt.sign({user: user}, config.security.jwtSecret, {expiresIn: Number(config.security.loginTokenExpire)});
+        const token = jwt.sign({user: user}, config.security.jwtSecret, {expiresIn: Number(config.security.loginTokenExpire)});
         //Returning JSON with token
         res.status(200).json({
             message: 'Successfully logged in',
@@ -167,7 +167,7 @@ exports.login = function(req,res){
     });
 };
 
-exports.changePassword = function (req,res) {
+exports.changePassword = (req, res) => {
     if(!req.body.current || !req.body.new)
         return res.status(500).json({
             message: 'Both current and new password are required'
@@ -181,8 +181,8 @@ exports.changePassword = function (req,res) {
             message: 'New password cannot be same as current password.'
         });
 
-    var decoded = jwt.decode(req.query.token);
-    User.findOne({username:decoded.user.username},function (err,user) {
+    const decoded = jwt.decode(req.query.token);
+    User.findOne({username:decoded.user.username},(err, user) => {
         if(err)
             return res.status(500).json({
                 message: 'An error occurred while changing password.',
@@ -195,13 +195,13 @@ exports.changePassword = function (req,res) {
             });
 
         //Set new password on server
-        var prepareCommand = 'yes ' + req.body.new + ' | passwd ' + user.username + ' > /dev/null 2>&1';
-        var sendCommand = exec(prepareCommand, function(err, stdout, stderr) {
+        const prepareCommand = `yes ${req.body.new} | passwd ${user.username} > /dev/null 2>&1`;
+        const sendCommand = exec(prepareCommand, (err, stdout, stderr) => {
             if(stderr)
                 console.log(stderr);
         });
 
-        sendCommand.on('exit', function (code) {
+        sendCommand.on('exit', code => {
             if (code != 0)
                 return res.status(500).json({
                     message: 'An error occurred while changing password on server.'
@@ -209,7 +209,7 @@ exports.changePassword = function (req,res) {
 
             //Set new password in db
             user.password = bcrypt.hashSync(req.body.new, 10);
-            user.save(function (err) {
+            user.save(err => {
                 if(err)
                     return res.status(500).json({
                         message: 'An error occurred while changing password.',
@@ -221,7 +221,7 @@ exports.changePassword = function (req,res) {
                     },
                     content: {
                         from: 'DeployHandler<donotreply@deployhandler.com>',
-                        subject: 'Warning, ' + user.username + ', your password has been changed!',
+                        subject: `Warning, ${user.username}, your password has been changed!`,
                         html:'<html><body><h2>Warning!</h2><p>Your password has been changed, if this action was not done by you please contact our Administrators immediately!.<br/></p>' +
                         '<p>Have a nice day, your DeployHandler team.</p></body></html>'
                     },
@@ -244,13 +244,13 @@ exports.changePassword = function (req,res) {
 };
 
 //TODO Change domain once live
-exports.forgotPasswordSendMail = function (req,res) {
+exports.forgotPasswordSendMail = (req, res) => {
     if(!req.body.email && !req.body.username)
         return res.status(500).json({
             message: 'Email address, or username is required in order to reset password.'
         });
 
-    User.findOne({$or: [{'username':req.body.username},{'email':req.body.email}]},function (err,user) {
+    User.findOne({$or: [{'username':req.body.username},{'email':req.body.email}]},(err, user) => {
         if(err)
             return res.status(500).json({
                 message: 'An error occurred while creating password reset link.',
@@ -261,8 +261,8 @@ exports.forgotPasswordSendMail = function (req,res) {
             });
 
         //Signing new token ,putting whole user object in it, token is valid for 5 minutes
-        var token = jwt.sign({user: user,resetPw:true}, config.security.jwtSecret, {expiresIn: Number(config.security.pwResetTokenExpire)});
-        var resetUrl = config.general.protocolFrontend + '://'+ config.general.domainFrontend + '/#/resetpw?token=' + token;
+        const token = jwt.sign({user: user,resetPw:true}, config.security.jwtSecret, {expiresIn: Number(config.security.pwResetTokenExpire)});
+        const resetUrl = `${config.general.protocolFrontend}://${config.general.domainFrontend}/#/resetpw?token=${token}`;
         //Send Email to user
         client.transmissions.send({
             options: {
@@ -271,9 +271,7 @@ exports.forgotPasswordSendMail = function (req,res) {
             content: {
                 from: 'DeployHandler<donotreply@deployhandler.com>',
                 subject: 'Password reset request - DeployHandler',
-                html:'<html><body><h3>Hi there,</h3><p>We are sending you this email beacuse you sent password reset request. ' +
-                'Below is URL which will help you reset your password. For security reasons, URL is valid only for 5 minutes.</p><br/>' +
-                '<a href="' + resetUrl + '" target="_blank">Click here to reset your password.</a><br/><p>We hope you enjoy using our platform. Your DeployHandler.</p></body></html>'
+                html:`<html><body><h3>Hi there,</h3><p>We are sending you this email beacuse you sent password reset request. Below is URL which will help you reset your password. For security reasons, URL is valid only for 5 minutes.</p><br/><a href="${resetUrl}" target="_blank">Click here to reset your password.</a><br/><p>We hope you enjoy using our platform. Your DeployHandler.</p></body></html>`
             },
             recipients: [
                 {address: user.email}
@@ -294,7 +292,7 @@ exports.forgotPasswordSendMail = function (req,res) {
     });
 };
 
-exports.forgotPasswordAction = function (req,res) {
+exports.forgotPasswordAction = (req, res) => {
     if(!req.query.token)
         return res.status(500).json({
             message: 'Secure token is required in order to reset password.'
@@ -309,14 +307,14 @@ exports.forgotPasswordAction = function (req,res) {
             message: 'Passwords do not match.'
         });
 
-    var decoded = jwt.decode(req.query.token);
+    const decoded = jwt.decode(req.query.token);
 
     if(!decoded.resetPw)
         return res.status(500).json({
             message: 'Secure token is not valid.'
         });
 
-    User.findOne({username:decoded.user.username},function (err,user) {
+    User.findOne({username:decoded.user.username},(err, user) => {
         if(err)
             return res.status(500).json({
                 message: 'An error occurred while changing password.',
@@ -324,13 +322,13 @@ exports.forgotPasswordAction = function (req,res) {
             });
 
         //Set new password on server
-        var prepareCommand = 'yes ' + req.body.password + ' | passwd ' + user.username + ' > /dev/null 2>&1';
-        var sendCommand = exec(prepareCommand, function(err, stdout, stderr) {
+        const prepareCommand = `yes ${req.body.password} | passwd ${user.username} > /dev/null 2>&1`;
+        const sendCommand = exec(prepareCommand, (err, stdout, stderr) => {
             if(stderr)
                 console.log(stderr);
         });
 
-        sendCommand.on('exit', function (code) {
+        sendCommand.on('exit', code => {
             if (code != 0)
                 return res.status(500).json({
                     message: 'An error occurred while changing password on server.',
@@ -339,7 +337,7 @@ exports.forgotPasswordAction = function (req,res) {
 
             //Set new password in db
             user.password = bcrypt.hashSync(req.body.password, 10);
-            user.save(function (err) {
+            user.save(err => {
                 if(err)
                     return res.status(500).json({
                         message: 'An error occurred while setting new password.',
@@ -353,40 +351,40 @@ exports.forgotPasswordAction = function (req,res) {
     });
 };
 
-exports.closeAccount = function (req,res) {
-    var decoded = jwt.decode(req.query.token);
-    User.findOne({username:decoded.user.username},function (err,user) {
+exports.closeAccount = (req, res) => {
+    const decoded = jwt.decode(req.query.token);
+    User.findOne({username:decoded.user.username},(err, user) => {
         if(decoded.user._id != user._id)
             return res.status(403).json({
                 message: 'You are allowed to close only your account.'
             });
 
         //Remove all apps from server and remove user from server(including users home dir)
-        var prepareCommand = config.general.workingDir + 'util/removeUser.sh ' + user.username;
-        var sendCommand = exec(prepareCommand, function(err, stdout, stderr) {
+        const prepareCommand = `${config.general.workingDir}util/removeUser.sh ${user.username}`;
+        const sendCommand = exec(prepareCommand, (err, stdout, stderr) => {
             if(stderr)
                 console.log(stderr);
         });
-        sendCommand.on('exit',function (code) {
+        sendCommand.on('exit',code => {
             if(code != 0)
                 return res.status(500).json({
                     message: 'Error while deleting user data from server.'
                 });
 
                 //Delete all Todos from user
-                Todo.remove({user:user._id},function (err) {
+                Todo.remove({user:user._id},err => {
                     if (err)
                         return res.status(500).json({
                             message: 'Error while deleting users Todos'
                         });
                     //Delete all Apps from user
-                    App.remove({user:user._id},function (err) {
+                    App.remove({user:user._id},err => {
                         if (err)
                             return res.status(500).json({
                                 message: 'Error while deleting users Apps'
                             });
                         //Actually remove user from db
-                        user.remove(function (err) {
+                        user.remove(err => {
                             if (err)
                                 return res.status(500).json({
                                     message: 'Error while deleting user'
