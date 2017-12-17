@@ -10,6 +10,7 @@ const config = require('./config.json');
 
 const swaggerUi = require('swagger-ui-express');
 const swaggerDocument = require(config.docs.docsPathJson);
+swaggerDocument.host = `${config.general.apiUrl}:${config.network.port}`; //Make swagger host dynamic
 
 const adminRoute = require('./api/routes/adminRoutes');
 const appsRoute = require('./api/routes/appsRoutes');
@@ -67,13 +68,13 @@ if(cluster.isMaster) {
     app.use('/', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 
-    const secureServer = https.createServer({
+    /*const secureServer = https.createServer({
         key: fs.readFileSync(config.network.sslKey),
         cert: fs.readFileSync(config.network.sslCert)
     }, app)
         .listen(config.network.securePort, () => {
             console.log(`Secure DeployHandler API listening on port ${config.network.securePort}`);
-        });
+        });*/
 
 
     const port = config.network.port;
