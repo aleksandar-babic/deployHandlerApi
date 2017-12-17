@@ -1,12 +1,12 @@
 {
   "general":{
-    "workingDir":"/root/deployhandler/deployhandlerapi/",
+    "workingDir":"/api/",
     "apiUrl":"api.deployhandler.com",
     "domainFrontend":"app.deployhandler.com",
     "protocolFrontend":"https"
   },
   "performance":{
-    "workers": 0 //Set to Maximum CPU core count
+    "workers": 0
   },
   "db":{
     "connectionString":"mongodb://mongo/deployhandlerapi"
